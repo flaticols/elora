@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Elora Rev2 — Denis's Layout</title>
+<style>
+  @page { size: A4 landscape; margin: 8mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 12px; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page { page-break-after: always; padding: 8px 0; }
+  .page:last-child { page-break-after: avoid; }
+  h1 { font-size: 18px; text-align: center; margin-bottom: 2px; letter-spacing: 3px; text-transform: uppercase; }
+  .h2w { text-align: center; margin-bottom: 4px; }
+  h2 { font-size: 15px; display: inline-block; border-bottom: 2px solid #000; padding-bottom: 2px; }
+  .sub { text-align: center; font-size: 10px; color: #555; margin-bottom: 6px; font-style: italic; }
+  .board { display: flex; justify-content: center; gap: 50px; margin: 0 auto; }
+  .half { position: relative; width: 500px; height: 280px; }
+  .k {
+    position: absolute; border: 1.5px solid #000; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; font-size: 10px; line-height: 1.2;
+    padding: 2px 3px; background: #fff; font-weight: 500;
+    white-space: pre-line; overflow: hidden;
+  }
+  .k.a { font-weight: 600; }
+  .k.m { background: #ddd; font-weight: 600; }
+  .k.l { border-width: 3px; font-weight: 700; }
+  .k.t { border: 1px dashed #999; color: #aaa; font-weight: 400; }
+  .k.e { font-size: 8px; border-color: #999; }
+  .legend { display: flex; justify-content: center; gap: 18px; margin-top: 8px; font-size: 10px; flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .lsw { display: inline-block; width: 18px; height: 12px; border-radius: 2px; vertical-align: middle; }
+  .info { text-align: center; font-size: 10px; color: #555; margin-top: 4px; }
+  @media print { .k.m { background: #ddd !important; } }
+</style>
+</head>
+<body>
+<div id="R"></div>
+<script>
+var U=62,V=44,W=58,H=40,TH=34,EW=46,EH=24;
+var LS=[18,6,0,3,12,21];
+var LI=[27,30];
+var RS=[21,12,3,0,6,18];
+var RI=[30,27];
+
+function lpos(){
+  var p={m:[],i:[],t:[],e:[]};
+  for(var r=0;r<4;r++) for(var c=0;c<6;c++) p.m.push([c*U, r*V+LS[c], W, H]);
+  p.i.push([6*U, 3*V+LI[0], W, H]);
+  p.i.push([7*U, 3*V+LI[1], W, H]);
+  var ty=3*V+LI[1]+H+6;
+  for(var t=0;t<5;t++) p.t.push([(t+3)*U, ty, W, TH]);
+  p.e.push([0, ty+TH+6, EW, EH]);
+  return p;
+}
+function rpos(){
+  var p={m:[],i:[],t:[],e:[]};
+  for(var r=0;r<4;r++) for(var c=0;c<6;c++) p.m.push([(c+2)*U, r*V+RS[c], W, H]);
+  p.i.push([0, 3*V+RI[0], W, H]);
+  p.i.push([U, 3*V+RI[1], W, H]);
+  var ty=3*V+RI[0]+H+6;
+  for(var t=0;t<5;t++) p.t.push([t*U, ty, W, TH]);
+  p.e.push([7*U, ty+TH+6, EW, EH]);
+  return p;
+}
+
+var LP=lpos(), RP=rpos();
+
+var L=[
+{n:"Layer 0 \u2014 Base",d:"QWERTY \u00b7 GACS Home Row Mods \u00b7 Duplicates Removed",
+ l:["` ~","1","2","3","4","5","OS\u21e7","Q","W","E","R","T","Ctl/Esc","GUI/A","Alt/S","Ctl/D","Sft/F","G","LShift","Z","X","C","V","B",
+    "CapsWd","Hyper","\u2318Space","LGui","TD3\nTab/Sys","TD0\nSpc/Nav","MO(3)","LAlt"],
+ lt:"aaaaaaaaaaaammmmmamaaaaaaaaalll",
+ r:["6","7","8","9","0","=","Y","U","I","O","P","Del","H","Sft/J","Ctl/K","Alt/L","GUI/;","Ctl/'","N","M",", <",". >","/ ?","RShift",
+    "OSL(1)","Enter","TD1\nBk/Sym","MO(4)","RGui","RCtl","\u2013 _","OSL(2)"],
+ rt:"aaaaaaaaaaaaammmmmaaaaaalallaaa",
+ info:"HRM: tap=letter, hold=modifier (GACS: Gui/Alt/Ctrl/Shift) | Chordal hold: same-hand = always tap | TD: double-tap Space or Bksp to lock layer"},
+
+{n:"Layer 1 \u2014 Navigation",d:"Arrows \u00b7 Home/End \u00b7 Word Movement \u00b7 Tab Mgmt (hold Space)",
+ l:["\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u2318`","^\u2190","^\u2192","^\u2191","^\u2193","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u2318N","\u2318T","\u2318W","\u2318[","\u2318]",
+    "\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7"],
+ lt:"tttttttaaaaatttttttaaaaatttttttttt",
+ r:["\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","Home","PgDn","PgUp","End","Ins","Bksp","\u2190","\u2193","\u2191","\u2192","\u00b7","\u00b7","\u2325\u2190","\u2325\u2193","\u2325\u2191","\u2325\u2192","\u00b7","\u00b7",
+    "\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7"],
+ rt:"ttttttaaaaaaaaattaaaattttttttt",
+ info:"HJKL arrows right home | Home/PgDn/PgUp/End top right | Alt+arrows: word jump | \u2318N/T/W: tab mgmt | \u2318[/]: back/forward"},
+
+{n:"Layer 2 \u2014 Symbols",d:"Brackets \u00b7 Operators \u00b7 All Unshifted (hold Backspace)",
+ l:["\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","!","@","#","$","%","\u00b7","`","<","{","[","(","\u00b7","~",">","}","]",")",
+    "\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7"],
+ lt:"tttttttaaaaataaaaataaaaatttttttttt",
+ r:["\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","^","&","*","+","=","Bksp","_","-","/","\\","|","\"",":",";","?","\u00b7","\u00b7","\u00b7",
+    "\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7"],
+ rt:"ttttttaaaaaaaaaaaaaaatttttttttt",
+ info:"Left: brackets & grouping ` < { [ ( | Right: operators & quotes ^ & * / \\ | All symbols accessible without Shift"},
+
+{n:"Layer 3 \u2014 F-Keys + Media",d:"Function Keys \u00b7 Brightness \u00b7 Media Controls (hold MO3)",
+ l:["F11","F1","F2","F3","F4","F5","\u00b7","\u00b7","Bri\u2191","Bri\u2193","\u00b7","\u00b7","\u00b7","\u00b7","Next","Play","Prev","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7",
+    "\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7"],
+ lt:"aaaaaattaattttaaatttttttttttttt",
+ r:["F6","F7","F8","F9","F10","F12","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","Vol\u2193","Vol\u2191","Mute","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7",
+    "\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7"],
+ rt:"aaaaaatttttttaaattttttttttttttt",
+ info:"F1\u2013F12 on number row positions | Bri\u2191/Bri\u2193 left | Next/Play/Prev left home | Vol\u2193/Vol\u2191/Mute right home"},
+
+{n:"Layer 4 \u2014 Mouse",d:"Mouse Movement \u00b7 Scroll \u00b7 Buttons \u00b7 Acceleration (hold MO4)",
+ l:["\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","Btn1","Btn2","Btn3","\u00b7","\u00b7","\u00b7","Acl0","Acl1","Acl2","\u00b7",
+    "\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7"],
+ lt:"ttttttttttttttaaatttaaattttttttt",
+ r:["\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","Wh\u2190","Wh\u2193","Wh\u2191","Wh\u2192","\u00b7","\u00b7","Ms\u2190","Ms\u2193","Ms\u2191","Ms\u2192","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7",
+    "\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7"],
+ rt:"ttttttaaaattaaaatttttttttttttttttt",
+ info:"Mouse HJKL right home | Scroll Wh\u2190/\u2193/\u2191/\u2192 right top | Btn1/2/3 left home | Acl0/1/2: slow/medium/fast"},
+
+{n:"Layer 5 \u2014 System",d:"Screenshots \u00b7 Spaces Nav \u00b7 Hide/Min/Quit (hold TD3)",
+ l:["\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u2318\u21e73","\u2318\u21e74","\u2318\u21e75","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7",
+    "\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7"],
+ lt:"tttttttttaaattttttttttttttttttttt",
+ r:["\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","^\u2190","^\u2193","^\u2191","^\u2192","\u00b7","\u00b7","\u2318H","\u2318M","\u2318Q","\u00b7","\u00b7","\u00b7",
+    "\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7"],
+ rt:"ttttttttttttaaaattaaattttttttttttt",
+ info:"\u2318\u21e73/4/5 screenshots left top | Ctrl+arrows: Spaces nav right home | \u2318H hide \u2318M minimize \u2318Q quit right bottom"}
+];
+
+function mk(par,x,y,w,h,label,type){
+  var d=document.createElement('div');
+  var cls='k';
+  var isBlank=(!label||label==='\u00b7');
+  if(isBlank) cls+=' t';
+  else if(type==='a') cls+=' a';
+  else if(type==='m') cls+=' m';
+  else if(type==='l') cls+=' l';
+  else if(type==='t') cls+=' t';
+  else if(type==='e') cls+=' e';
+  d.className=cls;
+  d.style.left=x+'px'; d.style.top=y+'px'; d.style.width=w+'px'; d.style.height=h+'px';
+  d.textContent=isBlank?'\u00b7':label;
+  par.appendChild(d);
+}
+
+function mkLegend(par){
+  var lg=document.createElement('div');lg.className='legend';
+  var items=[
+    ['1.5px solid #000','#fff','Active'],
+    ['1.5px solid #000','#ddd','Mod-tap'],
+    ['2.5px solid #000','#fff','Layer switch'],
+    ['1px dashed #999','#fff','Transparent']
+  ];
+  items.forEach(function(it){
+    var sp=document.createElement('span');
+    var sw=document.createElement('span');
+    sw.className='lsw';
+    sw.style.border=it[0]; sw.style.background=it[1];
+    sp.appendChild(sw);
+    var tx=document.createTextNode(it[2]);
+    sp.appendChild(tx);
+    lg.appendChild(sp);
+  });
+  par.appendChild(lg);
+}
+
+var root=document.getElementById('R');
+
+L.forEach(function(ly,idx){
+  var pg=document.createElement('div');
+  pg.className='page';
+
+  if(idx===0){
+    var h1=document.createElement('h1');
+    h1.textContent='Elora Rev2 \u2014 Denis\u2019s Layout';
+    pg.appendChild(h1);
+    var s=document.createElement('div');s.className='sub';
+    s.textContent='splitkb Halcyon Elora \u00b7 QWERTY \u00b7 GACS Home Row Mods \u00b7 macOS';
+    pg.appendChild(s);
+  }
+
+  var hw=document.createElement('div');hw.className='h2w';
+  var h2=document.createElement('h2');h2.textContent=ly.n;
+  hw.appendChild(h2);pg.appendChild(hw);
+  var sd=document.createElement('div');sd.className='sub';sd.textContent=ly.d;pg.appendChild(sd);
+
+  var bd=document.createElement('div');bd.className='board';
+
+  var lh=document.createElement('div');lh.className='half';
+  for(var i=0;i<24;i++) mk(lh,LP.m[i][0],LP.m[i][1],LP.m[i][2],LP.m[i][3],ly.l[i],ly.lt[i]);
+  for(var i=0;i<2;i++) mk(lh,LP.i[i][0],LP.i[i][1],LP.i[i][2],LP.i[i][3],ly.l[24+i],ly.lt[24+i]);
+  for(var i=0;i<5;i++) mk(lh,LP.t[i][0],LP.t[i][1],LP.t[i][2],LP.t[i][3],ly.l[26+i],ly.lt[26+i]);
+  mk(lh,LP.e[0][0],LP.e[0][1],LP.e[0][2],LP.e[0][3],ly.l[31],'e');
+  bd.appendChild(lh);
+
+  var rh=document.createElement('div');rh.className='half';
+  for(var i=0;i<24;i++) mk(rh,RP.m[i][0],RP.m[i][1],RP.m[i][2],RP.m[i][3],ly.r[i],ly.rt[i]);
+  for(var i=0;i<2;i++) mk(rh,RP.i[i][0],RP.i[i][1],RP.i[i][2],RP.i[i][3],ly.r[24+i],ly.rt[24+i]);
+  for(var i=0;i<5;i++) mk(rh,RP.t[i][0],RP.t[i][1],RP.t[i][2],RP.t[i][3],ly.r[26+i],ly.rt[26+i]);
+  mk(rh,RP.e[0][0],RP.e[0][1],RP.e[0][2],RP.e[0][3],ly.r[31],'e');
+  bd.appendChild(rh);
+
+  pg.appendChild(bd);
+
+  mkLegend(pg);
+  if(ly.info){
+    var inf=document.createElement('div');inf.className='info';inf.style.marginTop='4px';
+    inf.textContent=ly.info;
+    pg.appendChild(inf);
+  }
+  if(idx===0){
+    var i1=document.createElement('div');i1.className='info';
+    i1.textContent='TD0 = tap:Space / hold:Nav / 2\u00d7:lock Nav  \u2502  TD1 = tap:Bksp / hold:Sym / 2\u00d7:lock Sym  \u2502  TD3 = tap:Tab / hold:System';
+    pg.appendChild(i1);
+    var i2=document.createElement('div');i2.className='info';
+    i2.textContent='Hyper = \u2318\u2303\u2325\u21e7  \u2502  CapsWd = Caps Word (auto-off)  \u2502  OS\u21e7 = One-shot Shift  \u2502  OSL = One-shot Layer  \u2502  \u2318Space = Spotlight';
+    pg.appendChild(i2);
+  }
+  root.appendChild(pg);
+});
+</script>
+</body>
+</html>
