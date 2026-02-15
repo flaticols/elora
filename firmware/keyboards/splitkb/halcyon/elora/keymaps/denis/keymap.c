@@ -8,6 +8,7 @@
  */
 
 #include QMK_KEYBOARD_H
+#include "transactions.h"
 
 // ── Aliases ──
 
@@ -22,15 +23,37 @@
 
 // ── Lock mode state ──
 
-static bool     keyboard_locked    = false;
-static uint32_t lock_combo_start   = 0;    // 0 = combo not active
-static uint8_t  denied_key_led     = NO_LED;
+// Synced to slave for RGB (these are the "display" variables)
+static bool    keyboard_locked      = false;
+static uint8_t lock_combo_progress  = 0;      // 0 = no combo, 1-10 = progress steps
+static bool    lock_combo_locking   = false;   // true = locking, false = unlocking
+static uint8_t denied_key_led       = NO_LED;
+
+// Master-only raw timing (not synced)
+static uint32_t lock_combo_start   = 0;
 static uint32_t denied_flash_start = 0;
 
 // Physical matrix positions of the 4 corner keys (discovered at boot)
 static keypos_t corner_pos[4];
 // LED indices for number row 1→0 in left-to-right order (discovered at boot)
 static uint8_t  numrow_leds[LOCK_PROGRESS_STEPS];
+
+// ── Lock mode split sync ──
+
+typedef struct {
+    bool    locked;
+    uint8_t combo_progress;
+    bool    combo_locking;
+    uint8_t denied_led;
+} lock_sync_t;
+
+static void lock_sync_handler(uint8_t in_buflen, const void *in_data, uint8_t out_buflen, void *out_data) {
+    const lock_sync_t *s = (const lock_sync_t *)in_data;
+    keyboard_locked     = s->locked;
+    lock_combo_progress = s->combo_progress;
+    lock_combo_locking  = s->combo_locking;
+    denied_key_led      = s->denied_led;
+}
 
 // ── Tap dance state detection ──
 
@@ -241,6 +264,7 @@ static void lock_find_positions(void) {
 
 void keyboard_post_init_user(void) {
     lock_find_positions();
+    transaction_register_rpc(LOCK_SYNC_ID, lock_sync_handler);
 #ifdef RGB_MATRIX_ENABLE
     rgb_matrix_enable_noeeprom();
     rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
@@ -269,6 +293,12 @@ void matrix_scan_user(void) {
         lock_engage();
     }
 
+    // Clear expired denied flash
+    if (denied_key_led != NO_LED && timer_elapsed32(denied_flash_start) >= LOCK_DENIED_FLASH_MS) {
+        denied_key_led = NO_LED;
+    }
+
+    // Check if all 4 corner keys are physically held
     bool all_corners = true;
     for (uint8_t i = 0; i < 4; i++) {
         if (!matrix_is_on(corner_pos[i].row, corner_pos[i].col)) {
@@ -280,15 +310,43 @@ void matrix_scan_user(void) {
     if (all_corners) {
         if (lock_combo_start == 0) {
             lock_combo_start = timer_read32();
-        } else if (timer_elapsed32(lock_combo_start) >= LOCK_COMBO_HOLD_MS) {
+            lock_combo_locking = !keyboard_locked;
+        }
+        uint32_t elapsed = timer_elapsed32(lock_combo_start);
+        lock_combo_progress = elapsed / (LOCK_COMBO_HOLD_MS / LOCK_PROGRESS_STEPS);
+        if (lock_combo_progress > LOCK_PROGRESS_STEPS) lock_combo_progress = LOCK_PROGRESS_STEPS;
+
+        if (elapsed >= LOCK_COMBO_HOLD_MS) {
             if (keyboard_locked) {
                 lock_disengage();
             } else {
                 lock_engage();
             }
+            lock_combo_progress = 0;
         }
     } else {
         lock_combo_start = 0;
+        lock_combo_progress = 0;
+    }
+}
+
+// ── Split sync: push lock state to slave ──
+
+void housekeeping_task_user(void) {
+    if (!is_keyboard_master()) return;
+
+    static lock_sync_t last_sync;
+    lock_sync_t current = {
+        .locked         = keyboard_locked,
+        .combo_progress = lock_combo_progress,
+        .combo_locking  = lock_combo_locking,
+        .denied_led     = denied_key_led
+    };
+
+    if (memcmp(&current, &last_sync, sizeof(lock_sync_t)) != 0) {
+        if (transaction_rpc_send(LOCK_SYNC_ID, sizeof(lock_sync_t), &current)) {
+            last_sync = current;
+        }
     }
 }
 
@@ -297,7 +355,7 @@ void matrix_scan_user(void) {
 #ifdef RGB_MATRIX_ENABLE
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // Lock mode: block all keys and flash denied LED
-    if (keyboard_locked && lock_combo_start == 0) {
+    if (keyboard_locked && lock_combo_progress == 0) {
         if (record->event.pressed) {
             uint8_t r = record->event.key.row;
             uint8_t c = record->event.key.col;
@@ -338,41 +396,42 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     }
 
     // ── Lock mode visuals ──
-    if (keyboard_locked || lock_combo_start != 0) {
+    if (keyboard_locked || lock_combo_progress > 0) {
         // All LEDs off
         for (uint8_t i = led_min; i < led_max; i++) {
             rgb_matrix_set_color(i, 0, 0, 0);
         }
 
         // Progress bar on number row during combo hold
-        if (lock_combo_start != 0) {
-            uint32_t elapsed = timer_elapsed32(lock_combo_start);
-            uint8_t lit_count = elapsed / (LOCK_COMBO_HOLD_MS / LOCK_PROGRESS_STEPS);
-            if (lit_count > LOCK_PROGRESS_STEPS) lit_count = LOCK_PROGRESS_STEPS;
+        if (lock_combo_progress > 0) {
+            // Red/orange when locking, green when unlocking
+            uint8_t pr = lock_combo_locking ? 255 : 0;
+            uint8_t pg = lock_combo_locking ? 60  : 200;
+            uint8_t pb = 0;
 
-            for (uint8_t i = 0; i < lit_count; i++) {
+            for (uint8_t i = 0; i < lock_combo_progress; i++) {
                 if (numrow_leds[i] >= led_min && numrow_leds[i] < led_max) {
-                    rgb_matrix_set_color(numrow_leds[i], 0, 200, 0);
+                    rgb_matrix_set_color(numrow_leds[i], pr, pg, pb);
                 }
             }
 
-            // Dim green underglow pulse during combo
+            // Underglow pulse in matching color
             for (uint8_t i = led_min; i < led_max; i++) {
                 if (HAS_FLAGS(g_led_config.flags[i], LED_FLAG_UNDERGLOW)) {
                     uint8_t brightness = 40 + 40 * ((timer_read() % 1000) < 500);
-                    rgb_matrix_set_color(i, 0, brightness, 0);
+                    uint8_t ur = lock_combo_locking ? brightness : 0;
+                    uint8_t ug = lock_combo_locking ? (brightness / 4) : brightness;
+                    rgb_matrix_set_color(i, ur, ug, 0);
                 }
             }
             return false;
         }
 
         // Denied keypress: red flash on the specific key
-        if (denied_key_led != NO_LED && timer_elapsed32(denied_flash_start) < LOCK_DENIED_FLASH_MS) {
+        if (denied_key_led != NO_LED) {
             if (denied_key_led >= led_min && denied_key_led < led_max) {
                 rgb_matrix_set_color(denied_key_led, 255, 0, 0);
             }
-        } else {
-            denied_key_led = NO_LED;
         }
 
         return false;
