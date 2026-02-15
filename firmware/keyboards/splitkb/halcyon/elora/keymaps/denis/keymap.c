@@ -296,6 +296,20 @@ void matrix_scan_user(void) {
 
 #ifdef RGB_MATRIX_ENABLE
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    // Lock mode: block all keys and flash denied LED
+    if (keyboard_locked && lock_combo_start == 0) {
+        if (record->event.pressed) {
+            uint8_t r = record->event.key.row;
+            uint8_t c = record->event.key.col;
+            uint8_t led = g_led_config.matrix_co[r][c];
+            if (led != NO_LED) {
+                denied_key_led     = led;
+                denied_flash_start = timer_read32();
+            }
+        }
+        return false;
+    }
+
     switch (keycode) {
         case RM_TOGG: case RM_NEXT: case RM_PREV:
         case RM_HUEU: case RM_HUED: case RM_SATU:
