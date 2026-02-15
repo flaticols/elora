@@ -337,6 +337,48 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
         rgb_matrix_enable_noeeprom();
     }
 
+    // ── Lock mode visuals ──
+    if (keyboard_locked || lock_combo_start != 0) {
+        // All LEDs off
+        for (uint8_t i = led_min; i < led_max; i++) {
+            rgb_matrix_set_color(i, 0, 0, 0);
+        }
+
+        // Progress bar on number row during combo hold
+        if (lock_combo_start != 0) {
+            uint32_t elapsed = timer_elapsed32(lock_combo_start);
+            uint8_t lit_count = elapsed / (LOCK_COMBO_HOLD_MS / LOCK_PROGRESS_STEPS);
+            if (lit_count > LOCK_PROGRESS_STEPS) lit_count = LOCK_PROGRESS_STEPS;
+
+            for (uint8_t i = 0; i < lit_count; i++) {
+                if (numrow_leds[i] >= led_min && numrow_leds[i] < led_max) {
+                    rgb_matrix_set_color(numrow_leds[i], 0, 200, 0);
+                }
+            }
+
+            // Dim green underglow pulse during combo
+            for (uint8_t i = led_min; i < led_max; i++) {
+                if (HAS_FLAGS(g_led_config.flags[i], LED_FLAG_UNDERGLOW)) {
+                    uint8_t brightness = 40 + 40 * ((timer_read() % 1000) < 500);
+                    rgb_matrix_set_color(i, 0, brightness, 0);
+                }
+            }
+            return false;
+        }
+
+        // Denied keypress: red flash on the specific key
+        if (denied_key_led != NO_LED && timer_elapsed32(denied_flash_start) < LOCK_DENIED_FLASH_MS) {
+            if (denied_key_led >= led_min && denied_key_led < led_max) {
+                rgb_matrix_set_color(denied_key_led, 255, 0, 0);
+            }
+        } else {
+            denied_key_led = NO_LED;
+        }
+
+        return false;
+    }
+
+    // ── Normal mode visuals ──
     uint8_t layer = get_highest_layer(layer_state | default_layer_state);
 
     // Blink underglow white when one-shot Hyper is armed
