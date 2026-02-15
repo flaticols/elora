@@ -248,6 +248,50 @@ void keyboard_post_init_user(void) {
 #endif
 }
 
+// ── Lock mode helpers ──
+
+static void lock_engage(void) {
+    keyboard_locked = true;
+    layer_state_set(1 << _BASE);
+    clear_oneshot_mods();
+    lock_combo_start = 0;
+}
+
+static void lock_disengage(void) {
+    keyboard_locked = false;
+    lock_combo_start = 0;
+}
+
+// ── Matrix scan: idle lock + combo detection ──
+
+void matrix_scan_user(void) {
+    if (!keyboard_locked && last_input_activity_elapsed() > LOCK_IDLE_TIMEOUT) {
+        lock_engage();
+    }
+
+    bool all_corners = true;
+    for (uint8_t i = 0; i < 4; i++) {
+        if (!matrix_is_on(corner_pos[i].row, corner_pos[i].col)) {
+            all_corners = false;
+            break;
+        }
+    }
+
+    if (all_corners) {
+        if (lock_combo_start == 0) {
+            lock_combo_start = timer_read32();
+        } else if (timer_elapsed32(lock_combo_start) >= LOCK_COMBO_HOLD_MS) {
+            if (keyboard_locked) {
+                lock_disengage();
+            } else {
+                lock_engage();
+            }
+        }
+    } else {
+        lock_combo_start = 0;
+    }
+}
+
 // ── Block user RGB control ──
 
 #ifdef RGB_MATRIX_ENABLE
