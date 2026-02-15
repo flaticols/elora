@@ -20,6 +20,18 @@
 
 #define HYPER OSM(MOD_HYPR)
 
+// ── Lock mode state ──
+
+static bool     keyboard_locked    = false;
+static uint32_t lock_combo_start   = 0;    // 0 = combo not active
+static uint8_t  denied_key_led     = NO_LED;
+static uint32_t denied_flash_start = 0;
+
+// Physical matrix positions of the 4 corner keys (discovered at boot)
+static keypos_t corner_pos[4];
+// LED indices for number row 1→0 in left-to-right order (discovered at boot)
+static uint8_t  numrow_leds[LOCK_PROGRESS_STEPS];
+
 // ── Tap dance state detection ──
 
 typedef enum {
@@ -200,9 +212,35 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // clang-format on
 
+// ── Lock mode: discover matrix positions at boot ──
+
+static void lock_find_positions(void) {
+    const uint16_t corner_keys[4] = {KC_GRV, KC_EQL, KC_Z, KC_SLSH};
+    const uint16_t numrow_keys[10] = {
+        KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9, KC_0
+    };
+
+    for (uint8_t r = 0; r < MATRIX_ROWS; r++) {
+        for (uint8_t c = 0; c < MATRIX_COLS; c++) {
+            uint16_t kc = keymap_key_to_keycode(_BASE, (keypos_t){.row = r, .col = c});
+            for (uint8_t i = 0; i < 4; i++) {
+                if (kc == corner_keys[i]) {
+                    corner_pos[i] = (keypos_t){.row = r, .col = c};
+                }
+            }
+            for (uint8_t i = 0; i < 10; i++) {
+                if (kc == numrow_keys[i]) {
+                    numrow_leds[i] = g_led_config.matrix_co[r][c];
+                }
+            }
+        }
+    }
+}
+
 // ── Force RGB on at boot ──
 
 void keyboard_post_init_user(void) {
+    lock_find_positions();
 #ifdef RGB_MATRIX_ENABLE
     rgb_matrix_enable_noeeprom();
     rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
