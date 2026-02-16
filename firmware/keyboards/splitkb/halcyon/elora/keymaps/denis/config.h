@@ -36,12 +36,3 @@
 
 // --- Tap dance ---
 #define TAPPING_TERM_PER_KEY
-
-// --- Split sync for lock mode ---
-#define SPLIT_TRANSACTION_IDS_USER LOCK_SYNC_ID
-
-// --- Lock mode ---
-#define LOCK_IDLE_TIMEOUT   300000  // 5 minutes in ms
-#define LOCK_COMBO_HOLD_MS  6000    // 6 seconds to lock/unlock
-#define LOCK_PROGRESS_STEPS 10      // number row LEDs for progress bar
-#define LOCK_DENIED_FLASH_MS 300    // red flash duration on denied key
