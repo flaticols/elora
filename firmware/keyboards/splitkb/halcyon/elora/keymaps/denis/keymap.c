@@ -2,12 +2,19 @@
  * Elora Rev2 — Denis's keymap (compiled from elora-optimized.vil)
  *
  * Features:
+ *   - TFT display (left half): shows layer name + Hyper/CapsWord status
+ *   - Cirque trackpad (right half): cursor + tap/scroll gestures
  *   - RGB: active keys lit per-layer color (cyan/purple/red/green/yellow)
  *   - Per-key tapping term for HRM
  *   - Chordal hold (bilateral combos)
  */
 
 #include QMK_KEYBOARD_H
+
+#ifdef HLC_TFT_DISPLAY
+#include "hlc_tft_display/hlc_tft_display.h"
+#include "graphics/fonts/Retron2000-27.qff.h"
+#endif
 
 // ── Aliases ──
 
@@ -225,7 +232,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
-// ── Per-layer colors: active keys only ──
+// ── Per-layer colors: per-key only (underglow replaced by TFT display) ──
 
 static const uint8_t layer_colors[][3] = {
     [_BASE]  = {  0,   0,   0},   // off
@@ -243,17 +250,10 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
     uint8_t layer = get_highest_layer(layer_state | default_layer_state);
 
-    // Blink underglow white when one-shot Hyper is armed
-    bool osm_active = (get_oneshot_mods() & MOD_HYPR) == MOD_HYPR;
-
+    // Base layer: all LEDs off
     if (layer == 0) {
         for (uint8_t i = led_min; i < led_max; i++) {
-            if (osm_active && HAS_FLAGS(g_led_config.flags[i], LED_FLAG_UNDERGLOW)) {
-                bool blink_on = (timer_read() % 500) < 250;
-                rgb_matrix_set_color(i, blink_on ? 255 : 0, blink_on ? 255 : 0, blink_on ? 255 : 0);
-            } else {
-                rgb_matrix_set_color(i, 0, 0, 0);
-            }
+            rgb_matrix_set_color(i, 0, 0, 0);
         }
         return false;
     }
@@ -277,20 +277,105 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
         }
     }
 
-    // Underglow LEDs: layer color, or blink white if one-shot Hyper armed
+    // Turn off underglow LEDs (display handles layer indication now)
     for (uint8_t i = led_min; i < led_max; i++) {
         if (HAS_FLAGS(g_led_config.flags[i], LED_FLAG_UNDERGLOW)) {
-            if (osm_active) {
-                bool blink_on = (timer_read() % 500) < 250;
-                rgb_matrix_set_color(i, blink_on ? 255 : 0, blink_on ? 255 : 0, blink_on ? 255 : 0);
-            } else {
-                rgb_matrix_set_color(i, r_val, g_val, b_val);
-            }
+            rgb_matrix_set_color(i, 0, 0, 0);
         }
     }
 
     return false;
 }
+#endif
+
+// ── TFT Display: layer name + status (left half) ──
+
+#ifdef HLC_TFT_DISPLAY
+
+static painter_font_handle_t user_font;
+
+static const char *layer_names[] = {
+    [_BASE]  = "Base",
+    [_NAV]   = "Nav",
+    [_SYM]   = "Symbols",
+    [_FN]    = "F-Keys",
+    [_MOUSE] = "Mouse",
+    [_SYS]   = "System",
+};
+
+// HSV colors for display text (matching hlc_tft_display HSV scale)
+static const uint8_t layer_display_hsv[][3] = {
+    [_BASE]  = { HSV_LAYER_0 },   // white-ish
+    [_NAV]   = { HSV_LAYER_1 },   // orange
+    [_SYM]   = { HSV_LAYER_2 },   // yellow
+    [_FN]    = { HSV_LAYER_3 },   // red
+    [_MOUSE] = { HSV_LAYER_4 },   // green
+    [_SYS]   = { HSV_LAYER_5 },   // purple
+};
+
+bool module_post_init_user(void) {
+    user_font = qp_load_font_mem(font_Retron2000_27);
+    return true;
+}
+
+bool display_module_housekeeping_task_user(bool second_display) {
+    if (second_display) {
+        return true;  // no secondary display in our setup
+    }
+
+    static layer_state_t last_layer  = 0xFF;
+    static bool          last_hyper  = false;
+    static bool          last_cw     = false;
+
+    uint8_t layer = get_highest_layer(layer_state | default_layer_state);
+    bool    hyper = (get_oneshot_mods() & MOD_HYPR) == MOD_HYPR;
+    bool    cw    = is_caps_word_on();
+
+    if (layer != last_layer || hyper != last_hyper || cw != last_cw) {
+        // Clear entire surface
+        qp_rect(lcd_surface, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, HSV_BLACK, true);
+
+        // Draw layer name — centered horizontally, upper third
+        const char *name = (layer < 6) ? layer_names[layer] : "???";
+        int16_t tw = qp_textwidth(user_font, name);
+        int16_t x  = (LCD_WIDTH - tw) / 2;
+        int16_t y  = (LCD_HEIGHT / 2) - user_font->line_height - 5;
+
+        uint8_t h = (layer < 6) ? layer_display_hsv[layer][0] : 0;
+        uint8_t s = (layer < 6) ? layer_display_hsv[layer][1] : 255;
+        uint8_t v = (layer < 6) ? layer_display_hsv[layer][2] : 255;
+
+        qp_drawtext_recolor(lcd_surface, x, y, user_font, name, h, s, v, HSV_BLACK);
+
+        // One-shot Hyper indicator
+        if (hyper) {
+            static const char *htxt = "HYPER";
+            int16_t hw = qp_textwidth(user_font, htxt);
+            qp_drawtext_recolor(lcd_surface, (LCD_WIDTH - hw) / 2,
+                                y + user_font->line_height + 10,
+                                user_font, htxt, HSV_WHITE, HSV_BLACK);
+        }
+
+        // Caps Word indicator
+        if (cw) {
+            static const char *ctxt = "CAPS";
+            int16_t cww = qp_textwidth(user_font, ctxt);
+            qp_drawtext_recolor(lcd_surface, (LCD_WIDTH - cww) / 2,
+                                y + user_font->line_height * 2 + 20,
+                                user_font, ctxt, HSV_CAPS_ON, HSV_BLACK);
+        }
+
+        last_layer = layer;
+        last_hyper = hyper;
+        last_cw    = cw;
+    }
+
+    // Flush surface to physical LCD
+    qp_surface_draw(lcd_surface, lcd, 0, 0, 0);
+
+    return false;  // skip default hlc_tft_display rendering
+}
+
 #endif
 
 // ── Per-key tapping term ──

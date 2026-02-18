@@ -22,7 +22,7 @@
 // opposite-hand cases (hold A, tap J = GUI+J)
 #define PERMISSIVE_HOLD
 
-// --- Mouse keys tuning ---
+// --- Mouse keys tuning (software emulation, kept as fallback) ---
 #define MK_3_SPEED
 #define MK_MOMENTARY_ACCEL
 #define MK_C_OFFSET_UNMOD   8
@@ -33,6 +33,12 @@
 #define MK_C_INTERVAL_1     16
 #define MK_C_OFFSET_2       24
 #define MK_C_INTERVAL_2     16
+
+// --- Cirque trackpad tuning (right half module) ---
+#define CIRQUE_PINNACLE_TAPPING_TERM 0   // use firmware default
+#define POINTING_DEVICE_AUTO_MOUSE_ENABLE
+#define AUTO_MOUSE_DEFAULT_LAYER 4       // _MOUSE layer
+#define AUTO_MOUSE_TIME 650              // ms before returning to previous layer
 
 // --- Tap dance ---
 #define TAPPING_TERM_PER_KEY
