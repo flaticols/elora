@@ -13,7 +13,7 @@
 
 #ifdef HLC_TFT_DISPLAY
 #include "hlc_tft_display/hlc_tft_display.h"
-#include "graphics/fonts/Retron2000-27.qff.h"
+#include "hlc_tft_display/graphics/fonts/Retron2000-27.qff.h"
 #endif
 
 // ── Aliases ──
