@@ -27,6 +27,81 @@
 
 #define HYPER OSM(MOD_HYPR)
 
+// ── Tap dance state detection ──
+
+typedef enum {
+    TD_NONE,
+    TD_UNKNOWN,
+    TD_SINGLE_TAP,
+    TD_SINGLE_HOLD,
+    TD_DOUBLE_TAP,
+} td_state_t;
+
+static td_state_t cur_dance(tap_dance_state_t *state) {
+    if (state->count == 1) {
+        return state->pressed ? TD_SINGLE_HOLD : TD_SINGLE_TAP;
+    } else if (state->count == 2) {
+        return TD_DOUBLE_TAP;
+    }
+    return TD_UNKNOWN;
+}
+
+// TD(0): tap=Space, hold=MO(_NAV), double-tap=TG(_NAV)
+static td_state_t td0_state;
+static void td0_finished(tap_dance_state_t *state, void *data) {
+    td0_state = cur_dance(state);
+    switch (td0_state) {
+        case TD_SINGLE_TAP:  register_code(KC_SPC); break;
+        case TD_SINGLE_HOLD: layer_on(_NAV); break;
+        case TD_DOUBLE_TAP:  layer_invert(_NAV); break;
+        default: break;
+    }
+}
+static void td0_reset(tap_dance_state_t *state, void *data) {
+    if (td0_state == TD_SINGLE_TAP)  unregister_code(KC_SPC);
+    if (td0_state == TD_SINGLE_HOLD) layer_off(_NAV);
+    td0_state = TD_NONE;
+}
+
+// TD(1): tap=Backspace, hold=MO(_SYM), double-tap=TG(_SYM)
+static td_state_t td1_state;
+static void td1_finished(tap_dance_state_t *state, void *data) {
+    td1_state = cur_dance(state);
+    switch (td1_state) {
+        case TD_SINGLE_TAP:  register_code(KC_BSPC); break;
+        case TD_SINGLE_HOLD: layer_on(_SYM); break;
+        case TD_DOUBLE_TAP:  layer_invert(_SYM); break;
+        default: break;
+    }
+}
+static void td1_reset(tap_dance_state_t *state, void *data) {
+    if (td1_state == TD_SINGLE_TAP)  unregister_code(KC_BSPC);
+    if (td1_state == TD_SINGLE_HOLD) layer_off(_SYM);
+    td1_state = TD_NONE;
+}
+
+// TD(3): tap=Tab, hold=MO(_SYS)
+static td_state_t td3_state;
+static void td3_finished(tap_dance_state_t *state, void *data) {
+    td3_state = cur_dance(state);
+    switch (td3_state) {
+        case TD_SINGLE_TAP:  register_code(KC_TAB); break;
+        case TD_SINGLE_HOLD: layer_on(_SYS); break;
+        default: break;
+    }
+}
+static void td3_reset(tap_dance_state_t *state, void *data) {
+    if (td3_state == TD_SINGLE_TAP)  unregister_code(KC_TAB);
+    if (td3_state == TD_SINGLE_HOLD) layer_off(_SYS);
+    td3_state = TD_NONE;
+}
+
+tap_dance_action_t tap_dance_actions[] = {
+    [0] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td0_finished, td0_reset),
+    [1] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td1_finished, td1_reset),
+    [3] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td3_finished, td3_reset),
+};
+
 // clang-format off
 
 // ── Keymaps (translated from elora-optimized.vil) ──
@@ -44,7 +119,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
      * | LShift |   Z  |   X  |   C  |   V  |   B  |CapsWd|Hyper |  |OSL(1)| Enter|   N  |   M  |  , < |  . > |  / ? | RShift |
      * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
-     *                        |⌘Space| LGui |Tab/Sy|Spc/Nv| MO3  |  |Bk/Sym| MO4  | RGUI | RCtl |  -   |
+     *                        |⌘Space| LGui | TD3  | TD0  | MO3  |  | TD1  | MO4  | RGUI | RCtl |  -   |
      *                        `----------------------------------'  `----------------------------------'
      * ,-----------------------------------.                                              ,-----------------------------------.
      * | LAlt |      |       |      |      |                                              |OSL(2)|      |       |      |      |
@@ -55,7 +130,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         OSM(MOD_LSFT), KC_Q, KC_W, KC_E,    KC_R,    KC_T,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_DEL,
         LCTL_T(KC_ESC), LGUI_T(KC_A), LALT_T(KC_S), LCTL_T(KC_D), LSFT_T(KC_F), KC_G,            KC_H,    RSFT_T(KC_J), RCTL_T(KC_K), RALT_T(KC_L), RGUI_T(KC_SCLN), RCTL_T(KC_QUOT),
         KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    CW_TOGG, HYPER,   OSL(1),  KC_ENT,  KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
-                                   G(KC_SPC), KC_LGUI, LT(_SYS, KC_TAB), LT(_NAV, KC_SPC), MO(3), LT(_SYM, KC_BSPC), MO(4), KC_RGUI, KC_RCTL, KC_MINS,
+                                   G(KC_SPC), KC_LGUI, TD(3), TD(0),   MO(3),   TD(1),   MO(4),   KC_RGUI, KC_RCTL, KC_MINS,
         KC_LALT, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         OSL(2),  KC_NO,   KC_NO,   KC_NO,   KC_NO
     ),
 
@@ -307,22 +382,18 @@ bool display_module_housekeeping_task_user(bool second_display) {
 
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        // Shift (index finger — fastest)
+        case LGUI_T(KC_A):
+        case LALT_T(KC_S):
+        case LCTL_T(KC_D):
         case LSFT_T(KC_F):
         case RSFT_T(KC_J):
-            return 155;
-        // Ctrl/Alt (middle/ring finger)
-        case LCTL_T(KC_D):
         case RCTL_T(KC_K):
-        case LALT_T(KC_S):
         case RALT_T(KC_L):
-            return 165;
-        // GUI (pinky — slowest, needs more time)
-        case LGUI_T(KC_A):
         case RGUI_T(KC_SCLN):
+            return 190;
         case LCTL_T(KC_ESC):
         case RCTL_T(KC_QUOT):
-            return 185;
+            return 200;
         default:
             return TAPPING_TERM;
     }
