@@ -3,9 +3,11 @@
 ## What this gives you
 
 - **Fixed home row mods**: No more ghost Cmd+S. Chordal hold ensures same-hand combos (A+S) are always taps.
-- **Layer-dependent underglow**: White(base), Cyan(nav), Purple(symbols), Red(F-keys), Green(mouse), Yellow(system)
-- **Per-key tapping term**: Home row mods at 220ms, thumb keys at 200ms
-- **Tuned mouse keys**: 3-speed momentary acceleration
+- **TFT display layer indicator** (left half): Shows current layer name, Hyper status, Caps Word status — replaces underglow
+- **Cirque trackpad** (right half): 35mm trackpad with tap-to-click, scroll gestures, cursor glide, auto-mouse layer
+- **Per-key RGB**: Active keys lit in layer color (cyan/nav, purple/symbols, red/F-keys, green/mouse, yellow/system)
+- **Per-key tapping term**: Home row mods at 190ms, thumb keys at 175ms
+- **Tuned mouse keys**: 3-speed momentary acceleration (software fallback)
 
 ## Prerequisites
 
@@ -21,7 +23,7 @@ qmk setup  # follow prompts
 # 1. Fork and clone
 git clone https://github.com/splitkb/qmk_userspace.git
 cd qmk_userspace
-git checkout halcyon  # Vial firmware branch
+git checkout halcyon  # Halcyon firmware branch
 
 # 2. Set userspace path
 qmk config user.overlay_dir="$(realpath .)"
@@ -30,10 +32,15 @@ qmk config user.overlay_dir="$(realpath .)"
 cp -r /path/to/elora/firmware/keyboards/splitkb/halcyon/elora/keymaps/denis \
       keyboards/splitkb/halcyon/elora/keymaps/denis
 
-# 4. Compile (no modules since no encoders)
-qmk compile -kb splitkb/halcyon/elora -km denis
+# 4. Compile — two separate builds, one per half
+# Left half (TFT display):
+qmk compile -kb splitkb/halcyon/elora/rev2 -km denis -e HLC_TFT_DISPLAY=1
 
-# The .uf2 firmware file will be in the qmk_firmware build dir
+# Right half (Cirque trackpad):
+qmk compile -kb splitkb/halcyon/elora/rev2 -km denis -e HLC_CIRQUE_TRACKPAD=1
+
+# The .uf2 firmware files will be in the qmk_firmware build dir
+# Rename them so you know which is which before flashing!
 ```
 
 ## Option B: Using GitHub Actions (no local toolchain needed)
@@ -47,11 +54,15 @@ qmk compile -kb splitkb/halcyon/elora -km denis
 
 ## Flashing
 
-1. Put Elora in bootloader mode:
-   - Double-tap the reset button on the controller
-   - The keyboard will show up as `RPI-RP2` USB drive
-2. Drag the `.uf2` file onto the `RPI-RP2` drive
-3. Repeat for the other half
+Each half gets its own firmware — do NOT flash the same .uf2 to both sides.
+
+1. **Left half (TFT display):**
+   - Double-tap the reset button on the left controller
+   - Drag `elora_left_display.uf2` onto the `RPI-RP2` drive
+2. **Right half (Cirque trackpad):**
+   - Double-tap the reset button on the right controller
+   - Drag `elora_right_trackpad.uf2` onto the `RPI-RP2` drive
+3. Connect USB to the **left** half (it becomes the master)
 4. Load your `elora-optimized.vil` in Vial
 
 ## Troubleshooting

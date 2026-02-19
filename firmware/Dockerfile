@@ -11,5 +11,7 @@ RUN git clone --depth 1 -b halcyon https://github.com/splitkb/qmk_userspace.git 
 COPY keyboards/splitkb/halcyon/elora/keymaps/denis/ \
      keyboards/splitkb/halcyon/elora/keymaps/denis/
 
-# No modules (no encoders/display/trackpad)
-CMD ["qmk", "compile", "-kb", "splitkb/halcyon/elora/rev2", "-km", "denis", "-e", "HLC_NONE=1"]
+# Module flag passed at runtime via build.sh:
+#   -e HLC_TFT_DISPLAY=1      (left half — TFT display)
+#   -e HLC_CIRQUE_TRACKPAD=1   (right half — Cirque trackpad)
+CMD ["qmk", "compile", "-kb", "splitkb/halcyon/elora/rev2", "-km", "denis"]
