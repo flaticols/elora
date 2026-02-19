@@ -5,7 +5,7 @@ on:
     paths:
       - 'firmware/**'
   push:
-    branches: [main]
+    branches: [latest]
     paths:
       - 'firmware/**'
 
