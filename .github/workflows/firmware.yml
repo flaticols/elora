@@ -31,13 +31,6 @@ jobs:
               cp .build/splitkb_halcyon_elora_rev2_denis.uf2 /output/elora_right_trackpad.uf2
             '
 
-      - name: Upload artifacts (PR builds)
-        if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v4
-        with:
-          name: firmware
-          path: firmware/output/*.uf2
-
       - name: Get next semantic version
         if: github.event_name == 'push'
         id: version
