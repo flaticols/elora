@@ -4,13 +4,12 @@
 
 // --- Home Row Mods tuning ---
 
-// Slightly longer tapping term helps with
-// accidental mod activation during fast typing
-#define TAPPING_TERM 175
+// Base tapping term — chordal hold allows shorter values safely
+#define TAPPING_TERM 150
 
 // Disable quick-tap on mod-taps so fast
 // same-key double-tap doesn't trigger hold
-#define QUICK_TAP_TERM 120
+#define QUICK_TAP_TERM 100
 
 // Bilateral combinations: if both keys are on
 // the SAME hand, the mod-tap is always a tap.
@@ -40,5 +39,5 @@
 #define AUTO_MOUSE_DEFAULT_LAYER 4       // _MOUSE layer
 #define AUTO_MOUSE_TIME 650              // ms before returning to previous layer
 
-// --- Tap dance ---
+// --- Per-key tapping term ---
 #define TAPPING_TERM_PER_KEY
