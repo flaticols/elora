@@ -40,5 +40,10 @@
 #define AUTO_MOUSE_DEFAULT_LAYER 4       // _MOUSE layer
 #define AUTO_MOUSE_TIME 650              // ms before returning to previous layer
 
-// --- Tap dance ---
+// --- Leader key ---
+#define LEADER_TIMEOUT 350
+#define LEADER_PER_KEY_TIMING  // restart timeout after each key press
+#define LEADER_NO_TIMEOUT 0
+
+// --- Per-key tapping term ---
 #define TAPPING_TERM_PER_KEY
