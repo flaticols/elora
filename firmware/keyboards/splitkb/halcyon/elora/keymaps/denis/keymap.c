@@ -2,9 +2,9 @@
  * Elora Rev2 — Denis's keymap (compiled from elora-optimized.vil)
  *
  * Features:
- *   - TFT display (left half): shows layer name + Hyper/CapsWord status
+ *   - TFT display (left half): layer name at top + LOCK/HYPER/CAPS/RGB status
  *   - Cirque trackpad (right half): cursor + tap/scroll gestures
- *   - RGB: active keys lit per-layer color (cyan/purple/red/green/yellow)
+ *   - RGB: optional per-key backlight (toggle via RM_TOGG), off by default
  *   - Per-key tapping term for HRM
  *   - Chordal hold (bilateral combos)
  *   - Leader key: lock layers via Leader→Space/Bksp/Tab = TG(Nav/Sym/Sys)
@@ -28,9 +28,13 @@
 
 #define HYPER OSM(MOD_HYPR)
 
-// ── Layer lock tracking (for Leader→TG sequences) ──
+// ── State tracking ──
 
 static uint8_t locked_layers = 0;
+
+#ifdef RGB_MATRIX_ENABLE
+static bool rgb_user_enabled = false;  // RGB backlight off by default
+#endif
 
 // clang-format off
 
@@ -139,22 +143,28 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // clang-format on
 
-// ── Force RGB on at boot ──
+// ── Init RGB (kept enabled at driver level so indicators_advanced still runs) ──
 
 void keyboard_post_init_user(void) {
 #ifdef RGB_MATRIX_ENABLE
     rgb_matrix_enable_noeeprom();
     rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
     rgb_matrix_sethsv_noeeprom(0, 0, 0);
+    // rgb_user_enabled starts false — LEDs off until user presses RM_TOGG
 #endif
 }
 
-// ── Block user RGB control ──
+// ── RGB toggle (RM_TOGG toggles per-key backlight; other RGB keys blocked) ──
 
 #ifdef RGB_MATRIX_ENABLE
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case RM_TOGG: case RM_NEXT: case RM_PREV:
+        case RM_TOGG:
+            if (record->event.pressed) {
+                rgb_user_enabled = !rgb_user_enabled;
+            }
+            return false;  // don't pass to QMK's own toggle
+        case RM_NEXT: case RM_PREV:
         case RM_HUEU: case RM_HUED: case RM_SATU:
         case RM_SATD: case RM_VALU: case RM_VALD:
         case RM_SPDU: case RM_SPDD:
@@ -178,6 +188,14 @@ static const uint8_t layer_colors[][3] = {
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     if (!rgb_matrix_is_enabled()) {
         rgb_matrix_enable_noeeprom();
+    }
+
+    // If user disabled backlight, turn everything off
+    if (!rgb_user_enabled) {
+        for (uint8_t i = led_min; i < led_max; i++) {
+            rgb_matrix_set_color(i, 0, 0, 0);
+        }
+        return false;
     }
 
     uint8_t layer = get_highest_layer(layer_state | default_layer_state);
@@ -280,30 +298,37 @@ bool display_module_housekeeping_task_user(bool second_display) {
     static bool          last_hyper  = false;
     static bool          last_cw     = false;
     static bool          last_lock   = false;
+    static bool          last_rgb    = false;
 
     uint8_t layer  = get_highest_layer(layer_state | default_layer_state);
     bool    hyper  = (get_oneshot_mods() & MOD_HYPR) == MOD_HYPR;
     bool    cw     = is_caps_word_on();
     bool    lock   = (locked_layers & (1 << layer)) != 0;
+#ifdef RGB_MATRIX_ENABLE
+    bool    rgb_on = rgb_user_enabled;
+#else
+    bool    rgb_on = false;
+#endif
 
-    if (layer != last_layer || hyper != last_hyper || cw != last_cw || lock != last_lock) {
+    if (layer != last_layer || hyper != last_hyper || cw != last_cw
+        || lock != last_lock || rgb_on != last_rgb) {
         // Clear entire surface
         qp_rect(lcd_surface, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, HSV_BLACK, true);
-
-        // Draw layer name — centered horizontally, upper area
-        const char *name = (layer < 6) ? layer_names[layer] : "???";
-        int16_t tw = qp_textwidth(user_font, name);
-        int16_t x  = (LCD_WIDTH - tw) / 2;
-        int16_t y  = (LCD_HEIGHT / 2) - user_font->line_height - 5;
 
         uint8_t h = (layer < 6) ? layer_display_hsv[layer][0] : 0;
         uint8_t s = (layer < 6) ? layer_display_hsv[layer][1] : 255;
         uint8_t v = (layer < 6) ? layer_display_hsv[layer][2] : 255;
 
+        // Draw layer name — centered horizontally, at the top
+        const char *name = (layer < 6) ? layer_names[layer] : "???";
+        int16_t tw = qp_textwidth(user_font, name);
+        int16_t x  = (LCD_WIDTH - tw) / 2;
+        int16_t y  = 8;
+
         qp_drawtext_recolor(lcd_surface, x, y, user_font, name, h, s, v, HSV_BLACK);
 
         // Stack indicators below layer name (only active ones take space)
-        int16_t cur_y = y + user_font->line_height + 4;
+        int16_t cur_y = y + user_font->line_height + 8;
 
         // Layer lock indicator (shown in layer color)
         if (lock) {
@@ -329,12 +354,22 @@ bool display_module_housekeeping_task_user(bool second_display) {
             int16_t cww = qp_textwidth(user_font, ctxt);
             qp_drawtext_recolor(lcd_surface, (LCD_WIDTH - cww) / 2,
                                 cur_y, user_font, ctxt, HSV_CAPS_ON, HSV_BLACK);
+            cur_y += user_font->line_height + 4;
+        }
+
+        // RGB backlight status indicator
+        if (rgb_on) {
+            static const char *rtxt = "RGB";
+            int16_t rw = qp_textwidth(user_font, rtxt);
+            qp_drawtext_recolor(lcd_surface, (LCD_WIDTH - rw) / 2,
+                                cur_y, user_font, rtxt, h, s, v, HSV_BLACK);
         }
 
         last_layer = layer;
         last_hyper = hyper;
         last_cw    = cw;
         last_lock  = lock;
+        last_rgb   = rgb_on;
     }
 
     // Flush surface to physical LCD

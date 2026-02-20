@@ -7,13 +7,57 @@ Custom QMK firmware for a [splitkb Elora Rev2](https://splitkb.com/products/elor
 ## Features
 
 - **Home row mods** (GACS order) with chordal hold to prevent same-hand misfires
-- **TFT display** (left half) — shows current layer name, Hyper status, Caps Word indicator
+- **TFT display** (left half) — layer name at top, status indicators: LOCK, HYPER, CAPS, RGB
 - **Cirque trackpad** (right half) — tap-to-click, scroll gestures, cursor glide, auto-mouse layer
-- **Per-key RGB** — active keys glow in layer color (cyan/purple/red/green/yellow), all manual RGB blocked
+- **Per-key RGB** — optional, off by default, toggle with RM_TOGG; active keys glow in layer color
 - **Leader key** for layer locking (Leader+Space=Nav, Leader+Bksp=Symbols, Leader+Tab=System)
 - **One-shot Hyper** (Cmd+Ctrl+Alt+Shift) for app shortcuts via Raycast/Kitty/Zed
 - **6 layers**: Base, Navigation, Symbols, F-keys+Media, Mouse, System
 - **Caps Word** support
+
+## Special Keys
+
+| Key | Location | Tap | Hold |
+|-----|----------|-----|------|
+| Space | Right thumb | Space | Nav layer |
+| Backspace | Right thumb | Backspace | Symbols layer |
+| Tab | Left thumb | Tab | System layer |
+| Escape | Left home row | Escape | Left Ctrl |
+| ' " | Right home row | Quote | Right Ctrl |
+| Home row A/S/D/F | Left home row | Letter | GUI/Alt/Ctrl/Shift |
+| Home row J/K/L/; | Right home row | Letter | Shift/Ctrl/Alt/GUI |
+| MO3 | Left thumb | — | F-keys + Media layer |
+| MO4 | Right thumb | — | Mouse layer |
+| CapsWord | Left inner | Toggle Caps Word | — |
+| Hyper | Left inner | One-shot Hyper | — |
+| Leader | Left thumb | Start leader sequence | — |
+
+### Leader Key Sequences
+
+| Sequence | Action |
+|----------|--------|
+| Leader → Space | Toggle Nav layer lock |
+| Leader → Backspace | Toggle Symbols layer lock |
+| Leader → Tab | Toggle System layer lock |
+
+Locked layers stay active until toggled off with the same sequence. The TFT display shows "LOCK" when a layer is locked.
+
+### RGB Backlight
+
+Per-key backlight is **off by default**. Press `RM_TOGG` to toggle. When enabled:
+- Active keys glow in layer color (cyan=Nav, purple=Symbols, red=F-keys, green=Mouse, yellow=System)
+- Base layer keeps all LEDs off
+- Underglow LEDs are always off (TFT display handles layer indication)
+- Display shows "RGB" when backlight is on
+
+### TFT Display (Left Half)
+
+Shows from top to bottom:
+1. **Layer name** — current active layer (Base, Nav, Symbols, F-Keys, Mouse, System)
+2. **LOCK** — shown when the current layer is locked via Leader sequence
+3. **HYPER** — shown when one-shot Hyper modifier is armed
+4. **CAPS** — shown when Caps Word is active
+5. **RGB** — shown when per-key backlight is enabled
 
 ## Layout
 
