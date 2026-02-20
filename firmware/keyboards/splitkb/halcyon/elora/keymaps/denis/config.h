@@ -35,8 +35,9 @@
 #define MK_C_INTERVAL_2     16
 
 // --- Cirque trackpad tuning (right half module) ---
-#define CIRQUE_PINNACLE_TAPPING_TERM 0   // use firmware default
-#define POINTING_DEVICE_AUTO_MOUSE_ENABLE
+// The Halcyon cirque module (HLC_CIRQUE_TRACKPAD) handles driver init,
+// POINTING_DEVICE_ENABLE, pin config, tap detection, and absolute mode.
+// Only override values you explicitly want to change from module defaults.
 #define AUTO_MOUSE_DEFAULT_LAYER 4       // _MOUSE layer
 #define AUTO_MOUSE_TIME 650              // ms before returning to previous layer
 
