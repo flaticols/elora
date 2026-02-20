@@ -2,3 +2,5 @@
 .claude/
 firmware/output/
 firmware/.DS_Store
+CLAUDE.md
+docs/plans/
