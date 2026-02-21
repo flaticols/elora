@@ -49,3 +49,7 @@
 
 // --- Per-key tapping term ---
 #define TAPPING_TERM_PER_KEY
+
+// --- Split transport sync ---
+#define SPLIT_LAYER_STATE_ENABLE                   // sync layer state to slave (for right-half RGB)
+#define SPLIT_TRANSACTION_IDS_USER USER_SYNC_RGB   // custom RPC to sync rgb_user_enabled

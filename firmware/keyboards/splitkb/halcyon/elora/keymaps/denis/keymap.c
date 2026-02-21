@@ -11,6 +11,7 @@
  */
 
 #include QMK_KEYBOARD_H
+#include "transactions.h"
 
 #ifdef HLC_TFT_DISPLAY
 #include "hlc_tft_display/hlc_tft_display.h"
@@ -47,13 +48,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * ,-------------------------------------------.                              ,-------------------------------------------.
      * |   `    |   1  |   2  |   3  |   4  |   5  |                              |   6  |   7  |   8  |   9  |   0  |   =    |
      * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
-     * | OS Sft |   Q  |   W  |   E  |   R  |   T  |                              |   Y  |   U  |   I  |   O  |   P  |  Del   |
+     * | OS Sft |   Q  |   W  |   E  |   R  |   T  |                              |   Y  |   U  |   I  |   O  |   P  |  Esc   |
      * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
      * |Ctl/Esc |GUI/A |ALT/S |CTL/D |SFT/F |   G  |                              |   H  |SFT/J |CTL/K |ALT/L |GUI/; |Ctl/' "|
      * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
-     * | LShift |   Z  |   X  |   C  |   V  |   B  |CapsWd|Hyper |  |OSL(1)| Enter|   N  |   M  |  , < |  . > |  / ? | RShift |
+     * |  Redo  |   Z  |   X  |   C  |   V  |   B  |CapsWd|Hyper |  |OSL(1)| Enter|   N  |   M  |  , < |  . > |  / ? |  Del   |
      * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
-     *                        |Leader| LGui |Tab/Sy|Spc/Nv| MO3  |  |Bsp/Sm| MO4  | RGUI | RCtl |  -   |
+     *                        |Leader| ⌥⌫   |Tab/Sy|Spc/Nv| MO3  |  |Bsp/Sm| MO4  | Undo |OSL(3)|OSL(5)|
      *                        `----------------------------------'  `----------------------------------'
      * ,-----------------------------------.                                              ,-----------------------------------.
      * | LAlt |      |       |      |      |                                              |OSL(2)|      |       |      |      |
@@ -63,10 +64,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_BASE] = LAYOUT_elora_hlc(
         KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                                         KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_EQL,
-        OSM(MOD_LSFT), KC_Q, KC_W, KC_E,    KC_R,    KC_T,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_DEL,
+        OSM(MOD_LSFT), KC_Q, KC_W, KC_E,    KC_R,    KC_T,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_ESC,
         LCTL_T(KC_ESC), LGUI_T(KC_A), LALT_T(KC_S), LCTL_T(KC_D), LSFT_T(KC_F), KC_G,            KC_H,    RSFT_T(KC_J), RCTL_T(KC_K), RALT_T(KC_L), RGUI_T(KC_SCLN), RCTL_T(KC_QUOT),
-        KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    CW_TOGG, HYPER,   OSL(1),  KC_ENT,  KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
-                                   QK_LEAD, KC_LGUI, LT(_SYS, KC_TAB), LT(_NAV, KC_SPC), MO(3), LT(_SYM, KC_BSPC), MO(4), KC_RGUI, KC_RCTL, KC_MINS,
+        SGUI(KC_Z), KC_Z, KC_X,    KC_C,    KC_V,    KC_B,    CW_TOGG, HYPER,   OSL(1),  KC_ENT,  KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_DEL,
+                                   QK_LEAD, A(KC_BSPC), LT(_SYS, KC_TAB), LT(_NAV, KC_SPC), MO(3), LT(_SYM, KC_BSPC), MO(4), G(KC_Z), OSL(3), OSL(5),
         KC_LALT, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         OSL(2),  KC_NO,   KC_NO,   KC_NO,   KC_NO
     ),
 
@@ -143,10 +144,22 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // clang-format on
 
+// ── Split sync: rgb_user_enabled from master → slave ──
+
+#ifdef RGB_MATRIX_ENABLE
+static void rgb_sync_slave_handler(uint8_t in_buflen, const void *in_data,
+                                   uint8_t out_buflen, void *out_data) {
+    if (in_buflen == sizeof(bool)) {
+        rgb_user_enabled = *(const bool *)in_data;
+    }
+}
+#endif
+
 // ── Init RGB (kept enabled at driver level so indicators_advanced still runs) ──
 
 void keyboard_post_init_user(void) {
 #ifdef RGB_MATRIX_ENABLE
+    transaction_register_rpc(USER_SYNC_RGB, rgb_sync_slave_handler);
     rgb_matrix_enable_noeeprom();
     rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
     rgb_matrix_sethsv_noeeprom(0, 0, 0);
@@ -235,6 +248,21 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     }
 
     return false;
+}
+
+// ── Sync rgb_user_enabled to slave half periodically ──
+
+void housekeeping_task_user(void) {
+    if (is_keyboard_master()) {
+        static bool     last_rgb  = false;
+        static uint32_t last_sync = 0;
+        if (rgb_user_enabled != last_rgb || timer_elapsed32(last_sync) > 500) {
+            if (transaction_rpc_send(USER_SYNC_RGB, sizeof(bool), &rgb_user_enabled)) {
+                last_rgb  = rgb_user_enabled;
+                last_sync = timer_read32();
+            }
+        }
+    }
 }
 #endif
 
