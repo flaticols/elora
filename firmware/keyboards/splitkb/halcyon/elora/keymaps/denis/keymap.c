@@ -11,6 +11,7 @@
  */
 
 #include QMK_KEYBOARD_H
+#include "transactions.h"
 
 #ifdef HLC_TFT_DISPLAY
 #include "hlc_tft_display/hlc_tft_display.h"
@@ -143,10 +144,22 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // clang-format on
 
+// ── Split sync: rgb_user_enabled from master → slave ──
+
+#ifdef RGB_MATRIX_ENABLE
+static void rgb_sync_slave_handler(uint8_t in_buflen, const void *in_data,
+                                   uint8_t out_buflen, void *out_data) {
+    if (in_buflen == sizeof(bool)) {
+        rgb_user_enabled = *(const bool *)in_data;
+    }
+}
+#endif
+
 // ── Init RGB (kept enabled at driver level so indicators_advanced still runs) ──
 
 void keyboard_post_init_user(void) {
 #ifdef RGB_MATRIX_ENABLE
+    transaction_register_rpc(USER_SYNC_RGB, rgb_sync_slave_handler);
     rgb_matrix_enable_noeeprom();
     rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
     rgb_matrix_sethsv_noeeprom(0, 0, 0);
@@ -235,6 +248,21 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     }
 
     return false;
+}
+
+// ── Sync rgb_user_enabled to slave half periodically ──
+
+void housekeeping_task_user(void) {
+    if (is_keyboard_master()) {
+        static bool     last_rgb  = false;
+        static uint32_t last_sync = 0;
+        if (rgb_user_enabled != last_rgb || timer_elapsed32(last_sync) > 500) {
+            if (transaction_rpc_send(USER_SYNC_RGB, sizeof(bool), &rgb_user_enabled)) {
+                last_rgb  = rgb_user_enabled;
+                last_sync = timer_read32();
+            }
+        }
+    }
 }
 #endif
 
