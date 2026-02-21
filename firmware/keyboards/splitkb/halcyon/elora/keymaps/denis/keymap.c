@@ -175,6 +175,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case RM_TOGG:
             if (record->event.pressed) {
                 rgb_user_enabled = !rgb_user_enabled;
+                transaction_rpc_send(USER_SYNC_RGB, sizeof(bool), &rgb_user_enabled);
             }
             return false;  // don't pass to QMK's own toggle
         case RM_NEXT: case RM_PREV:
@@ -250,20 +251,6 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     return false;
 }
 
-// ── Sync rgb_user_enabled to slave half periodically ──
-
-void housekeeping_task_user(void) {
-    if (is_keyboard_master()) {
-        static bool     last_rgb  = false;
-        static uint32_t last_sync = 0;
-        if (rgb_user_enabled != last_rgb || timer_elapsed32(last_sync) > 500) {
-            if (transaction_rpc_send(USER_SYNC_RGB, sizeof(bool), &rgb_user_enabled)) {
-                last_rgb  = rgb_user_enabled;
-                last_sync = timer_read32();
-            }
-        }
-    }
-}
 #endif
 
 // ── Leader key: lock layers via TG ──
