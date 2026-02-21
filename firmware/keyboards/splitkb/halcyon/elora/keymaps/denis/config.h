@@ -38,6 +38,7 @@
 // The Halcyon cirque module (HLC_CIRQUE_TRACKPAD) handles driver init,
 // POINTING_DEVICE_ENABLE, pin config, tap detection, and absolute mode.
 // Only override values you explicitly want to change from module defaults.
+#define POINTING_DEVICE_RIGHT            // trackpad is on the right half
 #define AUTO_MOUSE_DEFAULT_LAYER 4       // _MOUSE layer
 #define AUTO_MOUSE_TIME 650              // ms before returning to previous layer
 

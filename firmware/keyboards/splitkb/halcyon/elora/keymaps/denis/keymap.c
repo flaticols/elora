@@ -100,11 +100,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO
     ),
 
-    /* Layer 4 — Mouse */
+    /* Layer 4 — Mouse (left hand controls, right hand on trackpad) */
     [_MOUSE] = LAYOUT_elora_hlc(
         _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, _______,                                      MS_WHLL, MS_WHLD, MS_WHLU, MS_WHLR, _______, _______,
-        _______, _______, MS_BTN1, MS_BTN2, MS_BTN3, _______,                                      MS_LEFT, MS_DOWN, MS_UP,   MS_RGHT, _______, _______,
+        _______, MS_WHLL, MS_WHLD, MS_WHLU, MS_WHLR, _______,                                      _______, _______, _______, _______, _______, _______,
+        _______, _______, MS_BTN1, MS_BTN2, MS_BTN3, _______,                                      _______, _______, _______, _______, _______, _______,
         _______, _______, MS_ACL0, MS_ACL1, MS_ACL2, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
                                    _______, _______, _______, _______, _______,  _______, _______, _______, _______, _______,
         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO
@@ -317,12 +317,14 @@ bool display_module_housekeeping_task_user(bool second_display) {
     static bool          last_cw     = false;
     static bool          last_lock   = false;
     static bool          last_rgb    = false;
+    static bool          last_lead   = false;
 
     uint8_t layer  = get_highest_layer(layer_state | default_layer_state);
     uint8_t mods   = get_mods();
     uint8_t osm    = get_oneshot_mods();
     bool    cw     = is_caps_word_on();
     bool    lock   = (locked_layers & (1 << layer)) != 0;
+    bool    lead   = leader_sequence_active();
 #ifdef RGB_MATRIX_ENABLE
     bool    rgb_on = rgb_user_enabled;
 #else
@@ -330,7 +332,8 @@ bool display_module_housekeeping_task_user(bool second_display) {
 #endif
 
     if (layer != last_layer || mods != last_mods || osm != last_osm
-        || cw != last_cw || lock != last_lock || rgb_on != last_rgb) {
+        || cw != last_cw || lock != last_lock || rgb_on != last_rgb
+        || lead != last_lead) {
         // Clear entire surface
         qp_rect(lcd_surface, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, HSV_BLACK, true);
 
@@ -348,6 +351,15 @@ bool display_module_housekeeping_task_user(bool second_display) {
 
         // Stack indicators below layer name (only active ones take space)
         int16_t cur_y = y + user_font->line_height + 8;
+
+        // Leader key active indicator
+        if (lead) {
+            static const char *ldtxt = "LEAD";
+            int16_t ldw = qp_textwidth(user_font, ldtxt);
+            qp_drawtext_recolor(lcd_surface, (LCD_WIDTH - ldw) / 2,
+                                cur_y, user_font, ldtxt, HSV_WHITE, HSV_BLACK);
+            cur_y += user_font->line_height + 4;
+        }
 
         // Layer lock indicator (shown in layer color)
         if (lock) {
@@ -399,6 +411,7 @@ bool display_module_housekeeping_task_user(bool second_display) {
         last_cw    = cw;
         last_lock  = lock;
         last_rgb   = rgb_on;
+        last_lead  = lead;
     }
 
     // Flush surface to physical LCD
