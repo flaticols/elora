@@ -68,6 +68,7 @@ Shows from top to bottom:
 6. **RGB** — shown when per-key backlight is enabled
 
 ## Layout
+<img width="2880" height="4650" alt="layout-full" src="https://github.com/user-attachments/assets/38a9a27b-188a-4f46-b9a3-ff297d655e7e" />
 
 ### Layer 0 — Base (QWERTY + Home Row Mods)
 
