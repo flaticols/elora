@@ -7,7 +7,7 @@ Custom QMK firmware for a [splitkb Elora Rev2](https://splitkb.com/products/elor
 ## Features
 
 - **Home row mods** (GACS order) with chordal hold to prevent same-hand misfires
-- **TFT display** (left half) — layer name at top, status indicators: LOCK, HYPER, CAPS, RGB
+- **TFT display** (left half) — layer name, held modifiers, one-shot modifiers, LOCK, CAPS, RGB
 - **Cirque trackpad** (right half) — tap-to-click, scroll gestures, cursor glide, auto-mouse layer
 - **Per-key RGB** — optional, off by default, toggle with RM_TOGG; active keys glow in layer color
 - **Leader key** for layer locking (Leader+Space=Nav, Leader+Bksp=Symbols, Leader+Tab=System)
@@ -55,9 +55,10 @@ Per-key backlight is **off by default**. Press `RM_TOGG` to toggle. When enabled
 Shows from top to bottom:
 1. **Layer name** — current active layer (Base, Nav, Symbols, F-Keys, Mouse, System)
 2. **LOCK** — shown when the current layer is locked via Leader sequence
-3. **HYPER** — shown when one-shot Hyper modifier is armed
-4. **CAPS** — shown when Caps Word is active
-5. **RGB** — shown when per-key backlight is enabled
+3. **Held modifiers** — shows active modifiers when holding home row mod keys (GUI, ALT, CTL, SFT, or HYPER when all four)
+4. **One-shot modifiers** — shows armed one-shot modifier state (e.g. after tapping OS⇧ or Hyper)
+5. **CAPS** — shown when Caps Word is active
+6. **RGB** — shown when per-key backlight is enabled
 
 ## Layout
 
@@ -92,7 +93,7 @@ LEFT                                          RIGHT
 ┌─────┬─────┬─────┬─────┬─────┬─────┐        ┌─────┬─────┬─────┬─────┬─────┬─────┐
 │     │     │     │     │     │     │        │     │     │     │     │     │     │
 ├─────┼─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │ ⌘`  │ ^←  │ ^→  │ ^↑  │ ^↓  │        │Home │PgDn │PgUp │ End │ Ins │ Del │
+│     │ ⌘`  │ ^←  │ ^→  │ ^↑  │ ^↓  │        │Home │PgDn │PgUp │ End │ Ins │ Bsp │
 ├─────┼─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┼─────┤
 │     │     │     │     │     │     │        │  ←  │  ↓  │  ↑  │  →  │     │     │
 ├─────┼─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┼─────┤
@@ -109,7 +110,7 @@ LEFT                                          RIGHT
 ┌─────┬─────┬─────┬─────┬─────┬─────┐        ┌─────┬─────┬─────┬─────┬─────┬─────┐
 │     │     │     │     │     │     │        │     │     │     │     │     │     │
 ├─────┼─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │  !  │  @  │  #  │  $  │  %  │        │  ^  │  &  │  *  │  +  │  =  │ Del │
+│     │  !  │  @  │  #  │  $  │  %  │        │  ^  │  &  │  *  │  +  │  =  │ Bsp │
 ├─────┼─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┼─────┤
 │     │  `  │  <  │  {  │  [  │  (  │        │  _  │  -  │  /  │  \  │  |  │  "  │
 ├─────┼─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┼─────┤
@@ -128,7 +129,7 @@ LEFT                                          RIGHT
 ├─────┼─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┼─────┤
 │     │     │ Bri↑│ Bri↓│     │     │        │     │     │     │     │     │     │
 ├─────┼─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │     │ ⏮  │ ⏯  │ ⏭  │     │        │     │ Vol↓│ Vol↑│ Mute│     │     │
+│     │     │ ⏭  │ ⏯  │ ⏮  │     │        │     │ Vol↓│ Vol↑│ Mute│     │     │
 ├─────┼─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┼─────┤
 │     │     │     │     │     │     │        │     │     │     │     │     │     │
 └─────┴─────┴─────┴─────┴─────┴─────┘        └─────┴─────┴─────┴─────┴─────┴─────┘
@@ -143,9 +144,9 @@ LEFT                                          RIGHT
 ├─────┼─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┼─────┤
 │     │     │     │     │     │     │        │Scr← │Scr↓ │Scr↑ │Scr→ │     │     │
 ├─────┼─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │     │ Mid │Right│Left │     │        │ Ms← │ Ms↓ │ Ms↑ │ Ms→ │     │     │
+│     │     │Btn1 │Btn2 │Btn3 │     │        │ Ms← │ Ms↓ │ Ms↑ │ Ms→ │     │     │
 ├─────┼─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │     │Acl2 │Acl1 │Acl0 │     │        │     │     │     │     │     │     │
+│     │     │Acl0 │Acl1 │Acl2 │     │        │     │     │     │     │     │     │
 └─────┴─────┴─────┴─────┴─────┴─────┘        └─────┴─────┴─────┴─────┴─────┴─────┘
 ```
 

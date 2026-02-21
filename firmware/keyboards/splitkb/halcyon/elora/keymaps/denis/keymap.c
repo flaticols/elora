@@ -284,6 +284,23 @@ static const uint8_t layer_display_hsv[][3] = {
     [_SYS]   = { HSV_LAYER_5 },   // purple
 };
 
+// Build modifier names into buf (max 16 bytes: "GUI ALT CTL SFT\0")
+static bool build_mod_str(uint8_t mods, char *buf) {
+    char *p = buf;
+    if (!mods) { *p = '\0'; return false; }
+    if ((mods & MOD_MASK_GUI) && (mods & MOD_MASK_ALT) &&
+        (mods & MOD_MASK_CTRL) && (mods & MOD_MASK_SHIFT)) {
+        *p++='H'; *p++='Y'; *p++='P'; *p++='E'; *p++='R'; *p='\0';
+        return true;
+    }
+    if (mods & MOD_MASK_GUI)   { if (p>buf) *p++=' '; *p++='G'; *p++='U'; *p++='I'; }
+    if (mods & MOD_MASK_ALT)   { if (p>buf) *p++=' '; *p++='A'; *p++='L'; *p++='T'; }
+    if (mods & MOD_MASK_CTRL)  { if (p>buf) *p++=' '; *p++='C'; *p++='T'; *p++='L'; }
+    if (mods & MOD_MASK_SHIFT) { if (p>buf) *p++=' '; *p++='S'; *p++='F'; *p++='T'; }
+    *p = '\0';
+    return true;
+}
+
 bool module_post_init_user(void) {
     user_font = qp_load_font_mem(font_Retron2000_27);
     return true;
@@ -295,13 +312,15 @@ bool display_module_housekeeping_task_user(bool second_display) {
     }
 
     static layer_state_t last_layer  = 0xFF;
-    static bool          last_hyper  = false;
+    static uint8_t       last_mods   = 0xFF;
+    static uint8_t       last_osm    = 0xFF;
     static bool          last_cw     = false;
     static bool          last_lock   = false;
     static bool          last_rgb    = false;
 
     uint8_t layer  = get_highest_layer(layer_state | default_layer_state);
-    bool    hyper  = (get_oneshot_mods() & MOD_HYPR) == MOD_HYPR;
+    uint8_t mods   = get_mods();
+    uint8_t osm    = get_oneshot_mods();
     bool    cw     = is_caps_word_on();
     bool    lock   = (locked_layers & (1 << layer)) != 0;
 #ifdef RGB_MATRIX_ENABLE
@@ -310,8 +329,8 @@ bool display_module_housekeeping_task_user(bool second_display) {
     bool    rgb_on = false;
 #endif
 
-    if (layer != last_layer || hyper != last_hyper || cw != last_cw
-        || lock != last_lock || rgb_on != last_rgb) {
+    if (layer != last_layer || mods != last_mods || osm != last_osm
+        || cw != last_cw || lock != last_lock || rgb_on != last_rgb) {
         // Clear entire surface
         qp_rect(lcd_surface, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, HSV_BLACK, true);
 
@@ -339,12 +358,21 @@ bool display_module_housekeeping_task_user(bool second_display) {
             cur_y += user_font->line_height + 4;
         }
 
-        // One-shot Hyper indicator
-        if (hyper) {
-            static const char *htxt = "HYPER";
-            int16_t hw = qp_textwidth(user_font, htxt);
-            qp_drawtext_recolor(lcd_surface, (LCD_WIDTH - hw) / 2,
-                                cur_y, user_font, htxt, HSV_WHITE, HSV_BLACK);
+        // Held modifiers (from home row mods, etc.)
+        char mod_buf[16];
+        if (build_mod_str(mods, mod_buf)) {
+            int16_t mw = qp_textwidth(user_font, mod_buf);
+            qp_drawtext_recolor(lcd_surface, (LCD_WIDTH - mw) / 2,
+                                cur_y, user_font, mod_buf, HSV_WHITE, HSV_BLACK);
+            cur_y += user_font->line_height + 4;
+        }
+
+        // One-shot modifiers (armed, waiting for next keypress)
+        char osm_buf[16];
+        if (build_mod_str(osm, osm_buf)) {
+            int16_t ow = qp_textwidth(user_font, osm_buf);
+            qp_drawtext_recolor(lcd_surface, (LCD_WIDTH - ow) / 2,
+                                cur_y, user_font, osm_buf, HSV_CAPS_ON, HSV_BLACK);
             cur_y += user_font->line_height + 4;
         }
 
@@ -366,7 +394,8 @@ bool display_module_housekeeping_task_user(bool second_display) {
         }
 
         last_layer = layer;
-        last_hyper = hyper;
+        last_mods  = mods;
+        last_osm   = osm;
         last_cw    = cw;
         last_lock  = lock;
         last_rgb   = rgb_on;
