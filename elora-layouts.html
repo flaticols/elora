@@ -69,12 +69,12 @@ var LP=lpos(), RP=rpos();
 var L=[
 {n:"Layer 0 \u2014 Base",d:"QWERTY \u00b7 GACS Home Row Mods \u00b7 Duplicates Removed",
  l:["` ~","1","2","3","4","5","OS\u21e7","Q","W","E","R","T","Ctl/Esc","GUI/A","Alt/S","Ctl/D","Sft/F","G","LShift","Z","X","C","V","B",
-    "CapsWd","Hyper","\u2318Space","LGui","TD3\nTab/Sys","TD0\nSpc/Nav","MO(3)","LAlt"],
+    "CapsWd","Hyper","Leader","LGui","Tab/Sys","Spc/Nav","MO(3)","LAlt"],
  lt:"aaaaaaaaaaaammmmmamaaaaaaaaalll",
  r:["6","7","8","9","0","=","Y","U","I","O","P","Del","H","Sft/J","Ctl/K","Alt/L","GUI/;","Ctl/'","N","M",", <",". >","/ ?","RShift",
-    "OSL(1)","Enter","TD1\nBk/Sym","MO(4)","RGui","RCtl","\u2013 _","OSL(2)"],
+    "OSL(1)","Enter","Bk/Sym","MO(4)","RGui","RCtl","\u2013 _","OSL(2)"],
  rt:"aaaaaaaaaaaaammmmmaaaaaalallaaa",
- info:"HRM: tap=letter, hold=modifier (GACS: Gui/Alt/Ctrl/Shift) | Chordal hold: same-hand = always tap | TD: double-tap Space or Bksp to lock layer"},
+ info:"HRM: tap=letter, hold=modifier (GACS: Gui/Alt/Ctrl/Shift) | Chordal hold: same-hand = always tap | Leader\u2192Space/Bksp/Tab = lock layer"},
 
 {n:"Layer 1 \u2014 Navigation",d:"Arrows \u00b7 Home/End \u00b7 Word Movement \u00b7 Tab Mgmt (hold Space)",
  l:["\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u2318`","^\u2190","^\u2192","^\u2191","^\u2193","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u2318N","\u2318T","\u2318W","\u2318[","\u2318]",
@@ -110,7 +110,7 @@ var L=[
  r:["\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","Wh\u2190","Wh\u2193","Wh\u2191","Wh\u2192","\u00b7","\u00b7","Ms\u2190","Ms\u2193","Ms\u2191","Ms\u2192","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7",
     "\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7"],
  rt:"ttttttaaaattaaaatttttttttttttttttt",
- info:"Mouse HJKL right home | Scroll Wh\u2190/\u2193/\u2191/\u2192 right top | Btn1/2/3 left home | Acl0/1/2: slow/medium/fast"},
+ info:"Mouse HJKL right home | Scroll Wh\u2190/\u2193/\u2191/\u2192 right top | Btn1/2/3 left home | Acl0/1/2: slow/medium/fast | Trackpad auto-activates (650ms)"},
 
 {n:"Layer 5 \u2014 System",d:"Screenshots \u00b7 Spaces Nav \u00b7 Hide/Min/Quit (hold TD3)",
  l:["\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u2318\u21e73","\u2318\u21e74","\u2318\u21e75","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7","\u00b7",
@@ -205,10 +205,10 @@ L.forEach(function(ly,idx){
   }
   if(idx===0){
     var i1=document.createElement('div');i1.className='info';
-    i1.textContent='TD0 = tap:Space / hold:Nav / 2\u00d7:lock Nav  \u2502  TD1 = tap:Bksp / hold:Sym / 2\u00d7:lock Sym  \u2502  TD3 = tap:Tab / hold:System';
+    i1.textContent='Spc/Nav = tap:Space / hold:Nav  \u2502  Bk/Sym = tap:Bksp / hold:Sym  \u2502  Tab/Sys = tap:Tab / hold:System  \u2502  Leader\u2192key = lock layer';
     pg.appendChild(i1);
     var i2=document.createElement('div');i2.className='info';
-    i2.textContent='Hyper = \u2318\u2303\u2325\u21e7  \u2502  CapsWd = Caps Word (auto-off)  \u2502  OS\u21e7 = One-shot Shift  \u2502  OSL = One-shot Layer  \u2502  \u2318Space = Spotlight';
+    i2.textContent='Hyper = \u2318\u2303\u2325\u21e7  \u2502  CapsWd = Caps Word (auto-off)  \u2502  OS\u21e7 = One-shot Shift  \u2502  OSL = One-shot Layer  \u2502  Leader = start key sequence';
     pg.appendChild(i2);
   }
   root.appendChild(pg);
