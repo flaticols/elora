@@ -32,6 +32,7 @@
 // ── State tracking ──
 
 static uint8_t locked_layers = 0;
+static bool leader_active = false;
 
 #ifdef RGB_MATRIX_ENABLE
 static bool rgb_user_enabled = false;  // RGB backlight off by default
@@ -255,7 +256,12 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
 // ── Leader key: lock layers via TG ──
 
+void leader_start_user(void) {
+    leader_active = true;
+}
+
 void leader_end_user(void) {
+    leader_active = false;
     if (leader_sequence_one_key(KC_SPC)) {
         layer_invert(_NAV);
         locked_layers = IS_LAYER_ON(_NAV)
@@ -339,7 +345,7 @@ bool display_module_housekeeping_task_user(bool second_display) {
     uint8_t osm    = get_oneshot_mods();
     bool    cw     = is_caps_word_on();
     bool    lock   = (locked_layers & (1 << layer)) != 0;
-    bool    lead   = leader_sequence_active();
+    bool    lead   = leader_active;
 #ifdef RGB_MATRIX_ENABLE
     bool    rgb_on = rgb_user_enabled;
 #else
