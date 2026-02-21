@@ -409,6 +409,28 @@ bool display_module_housekeeping_task_user(bool second_display) {
 
 #endif
 
+// ── Manual auto-mouse: activate _MOUSE layer on trackpad movement ──
+
+#ifdef POINTING_DEVICE_ENABLE
+static uint32_t auto_mouse_timer  = 0;
+static bool     auto_mouse_active = false;
+
+report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
+    if (mouse_report.x != 0 || mouse_report.y != 0) {
+        if (!auto_mouse_active && !layer_state_is(_MOUSE)) {
+            layer_on(_MOUSE);
+            auto_mouse_active = true;
+        }
+        auto_mouse_timer = timer_read32();
+    }
+    if (auto_mouse_active && timer_elapsed32(auto_mouse_timer) > AUTO_MOUSE_TIME) {
+        layer_off(_MOUSE);
+        auto_mouse_active = false;
+    }
+    return mouse_report;
+}
+#endif
+
 // ── Per-key tapping term ──
 
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
