@@ -94,7 +94,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_FN] = LAYOUT_elora_hlc(
         KC_F11,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                                       KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F12,
         _______, _______, KC_BRIU, KC_BRID, _______, _______,                                      _______, _______, _______, _______, _______, _______,
-        _______, _______, KC_MNXT, KC_MPLY, KC_MPRV, _______,                                      _______, KC_VOLD, KC_VOLU, KC_MUTE, _______, _______,
+        _______, _______, KC_MNXT, KC_MPLY, KC_MPRV, _______,                                      _______, KC_VOLD, KC_VOLU, KC_MUTE, RM_TOGG, _______,
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
                                    _______, _______, _______, _______, _______,  _______, _______, _______, _______, _______,
         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO
@@ -407,6 +407,28 @@ bool display_module_housekeeping_task_user(bool second_display) {
     return false;  // skip default hlc_tft_display rendering
 }
 
+#endif
+
+// ── Manual auto-mouse: activate _MOUSE layer on trackpad movement ──
+
+#ifdef POINTING_DEVICE_ENABLE
+static uint32_t auto_mouse_timer  = 0;
+static bool     auto_mouse_active = false;
+
+report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
+    if (mouse_report.x != 0 || mouse_report.y != 0) {
+        if (!auto_mouse_active && !layer_state_is(_MOUSE)) {
+            layer_on(_MOUSE);
+            auto_mouse_active = true;
+        }
+        auto_mouse_timer = timer_read32();
+    }
+    if (auto_mouse_active && timer_elapsed32(auto_mouse_timer) > AUTO_MOUSE_TIME) {
+        layer_off(_MOUSE);
+        auto_mouse_active = false;
+    }
+    return mouse_report;
+}
 #endif
 
 // ── Per-key tapping term ──
