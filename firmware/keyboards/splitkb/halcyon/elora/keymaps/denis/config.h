@@ -18,9 +18,6 @@
 // A(GUI) + S are both left hand = always taps.
 #define CHORDAL_HOLD
 
-// With chordal hold, use permissive hold for
-// opposite-hand cases (hold A, tap J = GUI+J)
-#define PERMISSIVE_HOLD
 
 // --- Mouse keys tuning (software emulation, kept as fallback) ---
 #define MK_3_SPEED

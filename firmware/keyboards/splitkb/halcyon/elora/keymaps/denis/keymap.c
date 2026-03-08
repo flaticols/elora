@@ -484,13 +484,14 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case LGUI_T(KC_A):
+        case RGUI_T(KC_SCLN):
+            return 220;
         case LALT_T(KC_S):
         case LCTL_T(KC_D):
         case LSFT_T(KC_F):
         case RSFT_T(KC_J):
         case RCTL_T(KC_K):
         case RALT_T(KC_L):
-        case RGUI_T(KC_SCLN):
             return 190;
         case LCTL_T(KC_ESC):
         case RCTL_T(KC_QUOT):

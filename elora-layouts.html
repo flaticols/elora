@@ -25,7 +25,7 @@
   .k.a { font-weight: 600; }
   .k.m { background: #ddd; font-weight: 600; }
   .k.l { border-width: 3px; font-weight: 700; }
-  .k.t { border: 1px dashed #999; color: #aaa; font-weight: 400; }
+  .k.t { border: 1.5px solid #ccc; color: #bbb; font-weight: 400; }
   .k.e { font-size: 8px; border-color: #999; }
   .legend { display: flex; justify-content: center; gap: 18px; margin-top: 8px; font-size: 10px; flex-wrap: wrap; }
   .legend span { display: inline-flex; align-items: center; gap: 4px; }
@@ -70,10 +70,10 @@ var L=[
 {n:"Layer 0 \u2014 Base",d:"QWERTY \u00b7 GACS Home Row Mods \u00b7 Duplicates Removed",
  l:["` ~","1","2","3","4","5","OS\u21e7","Q","W","E","R","T","Ctl/Esc","GUI/A","Alt/S","Ctl/D","Sft/F","G","\u2318\u21e7Z","Z","X","C","V","B",
     "CapsWd","Hyper","Leader","\u2325\u232b","Tab/Sys","Spc/Nav","MO(3)","LAlt"],
- lt:"aaaaaaaaaaaammmmmaaaaaaaaaaaalll",
+ lt:"aaaaaaaaaaaammmmmaaaaaaaaaaallll",
  r:["6","7","8","9","0","=","Y","U","I","O","P","Esc","H","Sft/J","Ctl/K","Alt/L","GUI/;","Ctl/'","N","M",", <",". >","/ ?","Del",
     "OSL(1)","Enter","Bk/Sym","MO(4)","\u2318Z","OSL(3)","OSL(5)","OSL(2)"],
- rt:"aaaaaaaaaaaaammmmmaaaaaalalall",
+ rt:"aaaaaaaaaaaaammmmmaaaaaalallalll",
  info:"HRM: tap=letter, hold=modifier (GACS: Gui/Alt/Ctrl/Shift) | Chordal hold: same-hand = always tap | Leader\u2192Space/Bksp/Tab = lock layer | \u2325\u232b=word del | \u2318Z=undo | \u2318\u21e7Z=redo"},
 
 {n:"Layer 1 \u2014 Navigation",d:"Arrows \u00b7 Home/End \u00b7 Word Movement \u00b7 Tab Mgmt (hold Space)",
@@ -144,7 +144,7 @@ function mkLegend(par){
     ['1.5px solid #000','#fff','Active'],
     ['1.5px solid #000','#ddd','Mod-tap'],
     ['2.5px solid #000','#fff','Layer switch'],
-    ['1px dashed #999','#fff','Transparent']
+    ['1.5px solid #ccc','#fff','Transparent']
   ];
   items.forEach(function(it){
     var sp=document.createElement('span');
