@@ -5,7 +5,7 @@
  *   - TFT display (left half): layer name at top + LOCK/HYPER/CAPS/RGB status
  *   - Cirque trackpad (right half): cursor + tap/scroll gestures
  *   - RGB: optional per-key backlight (toggle via RM_TOGG), off by default
- *   - Per-key tapping term for HRM
+ *   - Per-key tapping term for mod-taps
  *   - Chordal hold (bilateral combos)
  *   - Leader key: lock layers via Leader→Space/Bksp/Tab = TG(Nav/Sym/Sys)
  */
@@ -44,14 +44,14 @@ static bool rgb_user_enabled = false;  // RGB backlight off by default
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-    /* Layer 0 — Base (QWERTY + GACS home row mods)
+    /* Layer 0 — Base (QWERTY)
      *
      * ,-------------------------------------------.                              ,-------------------------------------------.
      * |   `    |   1  |   2  |   3  |   4  |   5  |                              |   6  |   7  |   8  |   9  |   0  |   =    |
      * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
      * | OS Sft |   Q  |   W  |   E  |   R  |   T  |                              |   Y  |   U  |   I  |   O  |   P  |  Esc   |
      * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
-     * |Ctl/Esc |GUI/A |ALT/S |CTL/D |SFT/F |   G  |                              |   H  |SFT/J |CTL/K |ALT/L |GUI/; |Ctl/' "|
+     * |Ctl/Esc |   A  |   S  |   D  |   F  |   G  |                              |   H  |   J  |   K  |   L  |   ;  |Ctl/' "|
      * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
      * |  Redo  |   Z  |   X  |   C  |   V  |   B  |CapsWd|Hyper |  |OSL(1)| Enter|   N  |   M  |  , < |  . > |  / ? |  Del   |
      * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
@@ -66,7 +66,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_BASE] = LAYOUT_elora_hlc(
         KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                                         KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_EQL,
         OSM(MOD_LSFT), KC_Q, KC_W, KC_E,    KC_R,    KC_T,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_ESC,
-        LCTL_T(KC_ESC), LGUI_T(KC_A), LALT_T(KC_S), LCTL_T(KC_D), LSFT_T(KC_F), KC_G,            KC_H,    RSFT_T(KC_J), RCTL_T(KC_K), RALT_T(KC_L), RGUI_T(KC_SCLN), RCTL_T(KC_QUOT),
+        LCTL_T(KC_ESC), KC_A, KC_S, KC_D, KC_F, KC_G,                                              KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, RCTL_T(KC_QUOT),
         SGUI(KC_Z), KC_Z, KC_X,    KC_C,    KC_V,    KC_B,    CW_TOGG, HYPER,   OSL(1),  KC_ENT,  KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_DEL,
                                    QK_LEAD, A(KC_BSPC), LT(_SYS, KC_TAB), LT(_NAV, KC_SPC), MO(3), LT(_SYM, KC_BSPC), MO(4), G(KC_Z), OSL(3), OSL(5),
         KC_LALT, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         OSL(2),  KC_NO,   KC_NO,   KC_NO,   KC_NO
@@ -483,15 +483,6 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
 
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case LGUI_T(KC_A):
-        case LALT_T(KC_S):
-        case LCTL_T(KC_D):
-        case LSFT_T(KC_F):
-        case RSFT_T(KC_J):
-        case RCTL_T(KC_K):
-        case RALT_T(KC_L):
-        case RGUI_T(KC_SCLN):
-            return 190;
         case LCTL_T(KC_ESC):
         case RCTL_T(KC_QUOT):
             return 200;

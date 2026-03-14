@@ -1,25 +1,14 @@
 // Elora Rev2 — Denis's custom config
-// Fixes HRM misfires (ghost Cmd+S etc.)
 #pragma once
 
-// --- Home Row Mods tuning ---
+// --- Mod-tap tuning ---
 
-// Slightly longer tapping term helps with
-// accidental mod activation during fast typing
 #define TAPPING_TERM 175
-
-// Disable quick-tap on mod-taps so fast
-// same-key double-tap doesn't trigger hold
 #define QUICK_TAP_TERM 120
 
-// Bilateral combinations: if both keys are on
-// the SAME hand, the mod-tap is always a tap.
-// This is the #1 fix for ghost Cmd+S —
-// A(GUI) + S are both left hand = always taps.
+// Bilateral combinations: mod-tap is always a tap
+// when both keys are on the same hand.
 #define CHORDAL_HOLD
-
-// With chordal hold, use permissive hold for
-// opposite-hand cases (hold A, tap J = GUI+J)
 #define PERMISSIVE_HOLD
 
 // --- Mouse keys tuning (software emulation, kept as fallback) ---
