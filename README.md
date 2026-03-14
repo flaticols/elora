@@ -2,17 +2,15 @@
 
 [![Latest Release](https://img.shields.io/github/v/release/flaticols/elora)](https://github.com/flaticols/elora/releases/latest)
 
-Custom QMK firmware for a [splitkb Elora Rev2](https://splitkb.com/products/elora) (Halcyon series) split keyboard with RP2040 controller. Left half has a TFT display module, right half has a Cirque trackpad. Optimized for macOS with Helix/Zed editors.
+Custom QMK firmware for a [splitkb Elora Rev2](https://splitkb.com/products/elora) (Halcyon series) split keyboard with RP2040 controller. Left half has a TFT display module. Optimized for macOS with Helix/Zed editors.
 
 ## Features
 
-- **Home row mods** (GACS order) with chordal hold to prevent same-hand misfires
 - **TFT display** (left half) — layer name, held modifiers, one-shot modifiers, LOCK, CAPS, RGB
-- **Cirque trackpad** (right half) — tap-to-click, scroll gestures, cursor glide, auto-mouse layer
 - **Per-key RGB** — optional, off by default, toggle with RM_TOGG; active keys glow in layer color
-- **Leader key** for layer locking (Leader+Space=Nav, Leader+Bksp=Symbols, Leader+Tab=System)
+- **Leader key** (both halves) for layer locking
 - **One-shot Hyper** (Cmd+Ctrl+Alt+Shift) for app shortcuts via Raycast/Kitty/Zed
-- **6 layers**: Base, Navigation, Symbols, F-keys+Media, Mouse, System
+- **5 layers**: Base, Navigation, Symbols, F-keys+Media, System
 - **Caps Word** support
 
 ## Special Keys
@@ -21,23 +19,22 @@ Custom QMK firmware for a [splitkb Elora Rev2](https://splitkb.com/products/elor
 |-----|----------|-----|------|
 | Space | Left thumb | Space | Nav layer |
 | Backspace | Right thumb | Backspace | Symbols layer |
-| Tab | Left thumb | Tab | System layer |
+| Tab | Top-left | Tab | System layer |
 | Escape | Left home row | Escape | Left Ctrl |
-| Escape | Top-right corner | Escape (dedicated, instant) | — |
-| ' " | Right home row | Quote | Right Ctrl |
-| Home row A/S/D/F | Left home row | Letter | GUI/Alt/Ctrl/Shift |
-| Home row J/K/L/; | Right home row | Letter | Shift/Ctrl/Alt/GUI |
-| ⌥⌫ | Left thumb | Word delete (Option+Backspace) | — |
-| Undo | Right thumb | ⌘Z | — |
-| Redo | Bottom-left | ⌘⇧Z | — |
-| Del | Bottom-right | Forward delete | — |
-| MO3 | Left thumb | — | F-keys + Media layer |
-| MO4 | Right thumb | — | Mouse layer |
-| OSL3 | Right thumb | One-shot F-Keys layer | — |
-| OSL5 | Right thumb | One-shot System layer | — |
-| CapsWord | Left inner | Toggle Caps Word | — |
-| Hyper | Left inner | One-shot Hyper | — |
-| Leader | Left thumb | Start leader sequence | — |
+| Del | Top-right | Forward delete | — |
+| ' " | Right home row | Quote | — |
+| LShift | Bottom-left | Left Shift | — |
+| RShift | Bottom-right | Right Shift | — |
+| CapsWord | Left thumb (outer) | Toggle Caps Word | — |
+| LOpt | Left thumb | Left Option | — |
+| LCmd | Left thumb | Left Cmd | — |
+| Hyper | Left thumb (inner) | One-shot Hyper | — |
+| Enter | Right thumb | Enter/Return | — |
+| RCmd | Right thumb | Right Cmd | — |
+| ROpt | Right thumb | Right Option | — |
+| RCtl | Right thumb | Right Ctrl | — |
+| Leader | Left/Right inner | Start leader sequence | — |
+| MO3 | Left inner | — | F-Keys layer |
 
 ### Leader Key Sequences
 
@@ -45,6 +42,7 @@ Custom QMK firmware for a [splitkb Elora Rev2](https://splitkb.com/products/elor
 |----------|--------|
 | Leader → Space | Toggle Nav layer lock |
 | Leader → Backspace | Toggle Symbols layer lock |
+| Leader → F | Toggle F-Keys layer lock |
 | Leader → Tab | Toggle System layer lock |
 
 Locked layers stay active until toggled off with the same sequence. The TFT display shows "LOCK" when a layer is locked.
@@ -52,7 +50,7 @@ Locked layers stay active until toggled off with the same sequence. The TFT disp
 ### RGB Backlight
 
 Per-key backlight is **off by default**. Press `RM_TOGG` to toggle. When enabled:
-- Active keys glow in layer color (cyan=Nav, purple=Symbols, red=F-keys, green=Mouse, yellow=System)
+- Active keys glow in layer color (cyan=Nav, purple=Symbols, red=F-keys, green=System)
 - Base layer keeps all LEDs off
 - Underglow LEDs are always off (TFT display handles layer indication)
 - Display shows "RGB" when backlight is on
@@ -60,29 +58,29 @@ Per-key backlight is **off by default**. Press `RM_TOGG` to toggle. When enabled
 ### TFT Display (Left Half)
 
 Shows from top to bottom:
-1. **Layer name** — current active layer (Base, Nav, Symbols, F-Keys, Mouse, System)
-2. **LOCK** — shown when the current layer is locked via Leader sequence
-3. **Held modifiers** — shows active modifiers when holding home row mod keys (GUI, ALT, CTL, SFT, or HYPER when all four)
-4. **One-shot modifiers** — shows armed one-shot modifier state (e.g. after tapping OS⇧ or Hyper)
-5. **CAPS** — shown when Caps Word is active
-6. **RGB** — shown when per-key backlight is enabled
+1. **Layer name** — current active layer (Base, Nav, Symbols, F-Keys, System)
+2. **LEAD** — shown while leader sequence is active
+3. **LOCK** — shown when the current layer is locked via Leader sequence
+4. **Held modifiers** — shows active modifiers (GUI, ALT, CTL, SFT, or HYPER when all four)
+5. **One-shot modifiers** — shows armed one-shot modifier state (e.g. after tapping Hyper)
+6. **CAPS** — shown when Caps Word is active
+7. **RGB** — shown when per-key backlight is enabled
 
 ## Layout
-<img width="2880" height="4650" alt="layout-full" src="https://github.com/user-attachments/assets/38a9a27b-188a-4f46-b9a3-ff297d655e7e" />
 
-### Layer 0 — Base (QWERTY + Home Row Mods)
+### Layer 0 — Base (QWERTY)
 
 ```
 ┌─────┬─────┬─────┬─────┬─────┬─────┐                              ┌─────┬─────┬─────┬─────┬─────┬─────┐
 │  `  │  1  │  2  │  3  │  4  │  5  │                              │  6  │  7  │  8  │  9  │  0  │  =  │
 ├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│OS⇧  │  Q  │  W  │  E  │  R  │  T  │                              │  Y  │  U  │  I  │  O  │  P  │ Esc │
+│Tb/Sy│  Q  │  W  │  E  │  R  │  T  │                              │  Y  │  U  │  I  │  O  │  P  │ Del │
 ├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│C/Esc│ G/A │ A/S │ C/D │ S/F │  G  │                              │  H  │ S/J │ C/K │ A/L │ G/; │ C/' │
+│C/Esc│  A  │  S  │  D  │  F  │  G  │                              │  H  │  J  │  K  │  L  │  ;  │  '  │
 ├─────┼─────┼─────┼─────┼─────┼─────┼─────┬─────┐  ┌─────┬─────┼─────┼─────┼─────┼─────┼─────┼─────┤
-│Redo │  Z  │  X  │  C  │  V  │  B  │CapsW│Hyper│  │OSL1 │Enter│  N  │  M  │  ,  │  .  │  /  │ Del │
+│L⇧   │  Z  │  X  │  C  │  V  │  B  │Lead │ MO3 │  │OSL1 │Lead │  N  │  M  │  ,  │  .  │  /  │  R⇧ │
 └─────┴─────┴─────┼─────┼─────┼─────┼─────┼─────┤  ├─────┼─────┼─────┼─────┼─────┼─────┴─────┴─────┘
-                  │Lead │ ⌥⌫  │Tb/Sy│Sp/Nv│ MO3 │  │Bs/Sm│ MO4 │Undo │OSL3 │OSL5 │
+                  │CapsW│LOpt │LCmd │Sp/Nv│Hyper│  │Bs/Sm│Enter│RCmd │ROpt │RCtl │
                   └─────┴─────┴─────┴─────┴─────┘  └─────┴─────┴─────┴─────┴─────┘
 ┌─────┬─────┬─────┬─────┬─────┐                              ┌─────┬─────┬─────┬─────┬─────┐
 │LAlt │     │     │     │     │  MODULE ROW                   │OSL2 │     │     │     │     │
@@ -91,28 +89,26 @@ Shows from top to bottom:
 
 | Area | Key | Tap | Hold |
 |------|-----|-----|------|
-| Home row | G/A, A/S, C/D, S/F | Letter | GUI, Alt, Ctrl, Shift |
-| Home row | S/J, C/K, A/L, G/; | Letter | Shift, Ctrl, Alt, GUI |
-| Home row | C/Esc | Escape | Left Ctrl |
-| Home row | C/' | Quote | Right Ctrl |
-| Top left | OS⇧ | — | One-shot Left Shift |
-| Top right | Esc | Escape (dedicated, instant) | — |
-| Bottom-left | Redo | ⌘⇧Z Redo | — |
-| Bottom-right | Del | Forward delete | — |
-| Thumb L | Lead | Start leader sequence | — |
-| Thumb L | ⌥⌫ | Word delete (Option+Backspace) | — |
-| Thumb L | Tb/Sy | Tab | System layer (5) |
-| Thumb L | Sp/Nv | Space | Nav layer (1) |
-| Thumb L | MO3 | — | F-Keys layer (3) |
-| Thumb R | Bs/Sm | Backspace | Symbols layer (2) |
-| Thumb R | MO4 | — | Mouse layer (4) |
-| Thumb R | Undo | ⌘Z Undo | — |
-| Thumb R | OSL3 | One-shot F-Keys layer | — |
-| Thumb R | OSL5 | One-shot System layer | — |
-| Inner L | CapsW | Toggle Caps Word | — |
-| Inner L | Hyper | One-shot Hyper (⌘⌃⌥⇧) | — |
+| Top left | Tb/Sy | Tab | System layer (4) |
+| Top right | Del | Forward delete | — |
+| Home row L | C/Esc | Escape | Left Ctrl |
+| Home row R | ' | Quote | — |
+| Bottom-left | L⇧ | Left Shift | — |
+| Bottom-right | R⇧ | Right Shift | — |
+| Inner L | Lead | Start leader sequence | — |
+| Inner L | MO3 | — | F-Keys layer (3) |
 | Inner R | OSL1 | One-shot Nav layer | — |
-| Inner R | Enter | Enter/Return | — |
+| Inner R | Lead | Start leader sequence | — |
+| Thumb L | CapsW | Toggle Caps Word | — |
+| Thumb L | LOpt | Left Option | — |
+| Thumb L | LCmd | Left Cmd | — |
+| Thumb L | Sp/Nv | Space | Nav layer (1) |
+| Thumb L | Hyper | One-shot Hyper (⌘⌃⌥⇧) | — |
+| Thumb R | Bs/Sm | Backspace | Symbols layer (2) |
+| Thumb R | Enter | Enter/Return | — |
+| Thumb R | RCmd | Right Cmd | — |
+| Thumb R | ROpt | Right Option | — |
+| Thumb R | RCtl | Right Ctrl | — |
 | Module L | LAlt | Left Alt/Option | — |
 | Module R | OSL2 | One-shot Symbols layer | — |
 
@@ -124,15 +120,13 @@ Shows from top to bottom:
 ├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
 │     │ ⌘`  │ ^←  │ ^→  │ ^↑  │ ^↓  │                              │Home │PgDn │PgUp │ End │ Ins │ Bsp │
 ├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │ ▪   │ ▪   │ ▪   │ ▪   │     │                              │  ←  │  ↓  │  ↑  │  →  │ ▪   │ ▪   │
+│     │     │     │     │     │     │                              │  ←  │  ↓  │  ↑  │  →  │     │     │
 ├─────┼─────┼─────┼─────┼─────┼─────┼─────┬─────┐  ┌─────┬─────┼─────┼─────┼─────┼─────┼─────┼─────┤
 │     │ ⌘N  │ ⌘T  │ ⌘W  │ ⌘[  │ ⌘]  │     │     │  │     │     │ ⌥←  │ ⌥↓  │ ⌥↑  │ ⌥→  │     │     │
 └─────┴─────┴─────┼─────┼─────┼─────┼─────┼─────┤  ├─────┼─────┼─────┼─────┼─────┼─────┴─────┴─────┘
                   │     │     │     │█████│     │  │     │     │     │     │     │
                   └─────┴─────┴─────┴─────┴─────┘  └─────┴─────┴─────┴─────┴─────┘
 ```
-
-▪ = transparent (home row mods pass through). Compose left HRM with right arrows (e.g. hold G/A + → = ⌘→ end of line, hold S/F + → = ⇧→ select right).
 
 Left: ⌘` app switch, ^←/→ Spaces, ^↑/↓ Mission Control. ⌘N/T/W new/tab/close, ⌘[/] back/forward.
 
@@ -166,35 +160,15 @@ Left hand = brackets (open on home row, close below). Right hand = operators. No
 ├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
 │     │     │  ⏭  │  ⏯  │  ⏮  │     │                              │     │ Vol↓│ Vol↑│Mute │ RGB │     │
 ├─────┼─────┼─────┼─────┼─────┼─────┼─────┬─────┐  ┌─────┬─────┼─────┼─────┼─────┼─────┼─────┼─────┤
-│     │     │     │     │     │     │     │     │  │     │     │     │     │     │     │     │     │
+│     │     │     │     │     │     │     │█████│  │     │     │     │     │     │     │     │     │
 └─────┴─────┴─────┼─────┼─────┼─────┼─────┼─────┤  ├─────┼─────┼─────┼─────┼─────┼─────┴─────┴─────┘
-                  │     │     │     │     │█████│  │     │     │     │     │     │
+                  │     │     │     │     │     │  │     │     │     │     │     │
                   └─────┴─────┴─────┴─────┴─────┘  └─────┴─────┴─────┴─────┴─────┘
 ```
 
 RGB = `RM_TOGG` (toggle per-key backlight on/off). F-keys row mirrors number row positions.
 
-### Layer 4 — Mouse (hold MO4 / trackpad auto-activate)
-
-```
-┌─────┬─────┬─────┬─────┬─────┬─────┐                              ┌─────┬─────┬─────┬─────┬─────┬─────┐
-│     │     │     │     │     │     │                              │     │     │     │     │     │     │
-├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │Scr← │Scr↓ │Scr↑ │Scr→ │     │                              │     │     │     │     │     │     │
-├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │     │Btn1 │Btn2 │Btn3 │     │                              │     │     │     │     │     │     │
-├─────┼─────┼─────┼─────┼─────┼─────┼─────┬─────┐  ┌─────┬─────┼─────┼─────┼─────┼─────┼─────┼─────┤
-│     │     │Acl0 │Acl1 │Acl2 │     │     │     │  │     │     │     │     │     │     │     │     │
-└─────┴─────┴─────┼─────┼─────┼─────┼─────┼─────┤  ├─────┼─────┼─────┼─────┼─────┼─────┴─────┴─────┘
-                  │     │     │     │     │     │  │     │█████│     │     │     │
-                  └─────┴─────┴─────┴─────┴─────┘  └─────┴─────┴─────┴─────┴─────┘
-```
-
-Left hand controls: scroll wheel (QWER row), mouse buttons (home row), acceleration (bottom row, Acl0=slow, Acl1=medium, Acl2=fast). Right hand is on the Cirque trackpad for cursor movement.
-
-Auto-activates on trackpad movement (650ms timeout to deactivate).
-
-### Layer 5 — System (hold Tab)
+### Layer 4 — System (hold Tab)
 
 ```
 ┌─────┬─────┬─────┬─────┬─────┬─────┐                              ┌─────┬─────┬─────┬─────┬─────┬─────┐
@@ -218,7 +192,7 @@ Screenshots: ⌘⇧3 full screen, ⌘⇧4 area select, ⌘⇧5 screenshot panel.
 cd firmware && ./build.sh
 # Output:
 #   firmware/output/elora_left_display.uf2    (left half — TFT display)
-#   firmware/output/elora_right_trackpad.uf2   (right half — Cirque trackpad)
+#   firmware/output/elora_right.uf2            (right half)
 ```
 
 See [firmware/BUILD.md](firmware/BUILD.md) for local QMK build instructions.
@@ -227,8 +201,8 @@ See [firmware/BUILD.md](firmware/BUILD.md) for local QMK build instructions.
 
 Each half gets its own firmware — do NOT flash the same .uf2 to both sides.
 
-1. **Left half**: double-tap reset, drag `elora_left_display.uf2` onto `RPI-RP2`
-2. **Right half**: double-tap reset, drag `elora_right_trackpad.uf2` onto `RPI-RP2`
+1. **Left half**: hold BOOT + double-tap RESET, drag `elora_left_display.uf2` onto `RPI-RP2`
+2. **Right half**: hold BOOT + double-tap RESET, drag `elora_right.uf2` onto `RPI-RP2`
 3. Connect USB to the **left** half (master)
 
 ## Releases
@@ -237,6 +211,4 @@ Pushes to `latest` that modify `firmware/**` automatically build both halves and
 
 ## Links
 
-- [REQUIREMENTS.md](REQUIREMENTS.md) — full design spec
 - [firmware/BUILD.md](firmware/BUILD.md) — detailed build instructions
-- [elora-cheatsheet.md](elora-cheatsheet.md) — printable layout reference
