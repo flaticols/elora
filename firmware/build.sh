@@ -18,13 +18,13 @@ docker run --rm -v "$(pwd)/output:/output" elora-firmware \
         cp "$UF2" /output/elora_left_display.uf2 &&
         rm "$UF2" &&
 
-        echo "--- RIGHT half (Cirque trackpad) ---" &&
-        qmk compile -kb splitkb/halcyon/elora/rev2 -km denis -e HLC_CIRQUE_TRACKPAD=1 &&
+        echo "--- RIGHT half ---" &&
+        qmk compile -kb splitkb/halcyon/elora/rev2 -km denis &&
         UF2=$(find / -name "*.uf2" -not -path "/proc/*" -not -path "/sys/*" -not -path "/output/*" 2>/dev/null | head -1) &&
         echo "Found: $UF2" &&
-        cp "$UF2" /output/elora_right_trackpad.uf2
+        cp "$UF2" /output/elora_right.uf2
     '
 
 echo ""
 echo "Done! Firmware files:"
-ls -lh output/elora_left_display.uf2 output/elora_right_trackpad.uf2
+ls -lh output/elora_left_display.uf2 output/elora_right.uf2

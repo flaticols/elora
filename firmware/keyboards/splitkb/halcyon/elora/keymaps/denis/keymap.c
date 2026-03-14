@@ -3,7 +3,6 @@
  *
  * Features:
  *   - TFT display (left half): layer name at top + LOCK/HYPER/CAPS/RGB status
- *   - Cirque trackpad (right half): cursor + tap/scroll gestures
  *   - RGB: optional per-key backlight (toggle via RM_TOGG), off by default
  *   - Per-key tapping term for mod-taps
  *   - Chordal hold (bilateral combos)
@@ -24,8 +23,7 @@
 #define _NAV 1
 #define _SYM 2
 #define _FN 3
-#define _MOUSE 4
-#define _SYS 5
+#define _SYS 4
 
 #define HYPER OSM(MOD_HYPR)
 
@@ -49,13 +47,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * ,-------------------------------------------.                              ,-------------------------------------------.
      * |   `    |   1  |   2  |   3  |   4  |   5  |                              |   6  |   7  |   8  |   9  |   0  |   =    |
      * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
-     * | OS Sft |   Q  |   W  |   E  |   R  |   T  |                              |   Y  |   U  |   I  |   O  |   P  |  Esc   |
+     * |Tab/Sys |   Q  |   W  |   E  |   R  |   T  |                              |   Y  |   U  |   I  |   O  |   P  |  Del   |
      * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
-     * |Ctl/Esc |   A  |   S  |   D  |   F  |   G  |                              |   H  |   J  |   K  |   L  |   ;  |Ctl/' "|
+     * |Ctl/Esc |   A  |   S  |   D  |   F  |   G  |                              |   H  |   J  |   K  |   L  |   ;  |   ' "  |
      * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
-     * | LShift |   Z  |   X  |   C  |   V  |   B  |CapsWd|Hyper |  |OSL(1)| Enter|   N  |   M  |  , < |  . > |  / ? |  Del   |
+     * | LShift |   Z  |   X  |   C  |   V  |   B  |Leader| MO3  |  |OSL(1)|Leader|   N  |   M  |  , < |  . > |  / ? | RShift |
      * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
-     *                        |Leader| ⌥⌫   |Tab/Sy|Spc/Nv| MO3  |  |Bsp/Sm| MO4  | Undo |OSL(3)|OSL(5)|
+     *                        |CapsWd| LOpt | LCmd |Spc/Nv|Hyper |  |Bsp/Sm| Enter| RCmd | ROpt | RCtl |
      *                        `----------------------------------'  `----------------------------------'
      * ,-----------------------------------.                                              ,-----------------------------------.
      * | LAlt |      |       |      |      |                                              |OSL(2)|      |       |      |      |
@@ -65,10 +63,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_BASE] = LAYOUT_elora_hlc(
         KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                                         KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_EQL,
-        OSM(MOD_LSFT), KC_Q, KC_W, KC_E,    KC_R,    KC_T,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_ESC,
-        LCTL_T(KC_ESC), KC_A, KC_S, KC_D, KC_F, KC_G,                                              KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, RCTL_T(KC_QUOT),
-        KC_LSFT, KC_Z, KC_X,    KC_C,    KC_V,    KC_B,    CW_TOGG, HYPER,   OSL(1),  KC_ENT,  KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_DEL,
-                                   QK_LEAD, A(KC_BSPC), LT(_SYS, KC_TAB), LT(_NAV, KC_SPC), MO(3), LT(_SYM, KC_BSPC), MO(4), G(KC_Z), OSL(3), OSL(5),
+        LT(_SYS, KC_TAB), KC_Q, KC_W, KC_E,    KC_R,    KC_T,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_DEL,
+        LCTL_T(KC_ESC), KC_A, KC_S, KC_D, KC_F, KC_G,                                              KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
+        KC_LSFT, KC_Z, KC_X,    KC_C,    KC_V,    KC_B,    QK_LEAD, MO(3),   OSL(1),  QK_LEAD, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
+                                   CW_TOGG, KC_LALT, KC_LGUI, LT(_NAV, KC_SPC), HYPER, LT(_SYM, KC_BSPC), KC_ENT, KC_RGUI, KC_RALT, KC_RCTL,
         KC_LALT, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         OSL(2),  KC_NO,   KC_NO,   KC_NO,   KC_NO
     ),
 
@@ -102,17 +100,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO
     ),
 
-    /* Layer 4 — Mouse (left hand controls, right hand on trackpad) */
-    [_MOUSE] = LAYOUT_elora_hlc(
-        _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
-        _______, MS_WHLL, MS_WHLD, MS_WHLU, MS_WHLR, _______,                                      _______, _______, _______, _______, _______, _______,
-        _______, _______, MS_BTN1, MS_BTN2, MS_BTN3, _______,                                      _______, _______, _______, _______, _______, _______,
-        _______, _______, MS_ACL0, MS_ACL1, MS_ACL2, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-                                   _______, _______, _______, _______, _______,  _______, _______, _______, _______, _______,
-        _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO
-    ),
-
-    /* Layer 5 — System */
+    /* Layer 4 — System */
     [_SYS] = LAYOUT_elora_hlc(
         _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
         _______, _______, _______, SGUI(KC_3), SGUI(KC_4), SGUI(KC_5),                             _______, _______, _______, _______, _______, _______,
@@ -122,8 +110,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO
     ),
 
-    /* Layer 6 — Reserved (transparent) */
-    [6] = LAYOUT_elora_hlc(
+    /* Layer 5 — Reserved (transparent) */
+    [5] = LAYOUT_elora_hlc(
         _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
@@ -132,8 +120,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO
     ),
 
-    /* Layer 7 — Reserved (transparent) */
-    [7] = LAYOUT_elora_hlc(
+    /* Layer 6 — Reserved (transparent) */
+    [6] = LAYOUT_elora_hlc(
         _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
@@ -203,7 +191,6 @@ static const uint8_t layer_colors[][3] = {
     [_NAV] = {0, 200, 200}, // cyan
     [_SYM] = {180, 0, 255}, // purple
     [_FN] = {255, 60, 0},   // red-orange
-    [_MOUSE] = {0, 200, 0}, // green
     [_SYS] = {255, 200, 0}, // yellow
 };
 
@@ -230,9 +217,9 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     return false;
   }
 
-  uint8_t r_val = layer < 6 ? layer_colors[layer][0] : 255;
-  uint8_t g_val = layer < 6 ? layer_colors[layer][1] : 255;
-  uint8_t b_val = layer < 6 ? layer_colors[layer][2] : 255;
+  uint8_t r_val = layer < 5 ? layer_colors[layer][0] : 255;
+  uint8_t g_val = layer < 5 ? layer_colors[layer][1] : 255;
+  uint8_t b_val = layer < 5 ? layer_colors[layer][2] : 255;
 
   for (uint8_t r = 0; r < MATRIX_ROWS; r++) {
     for (uint8_t c = 0; c < MATRIX_COLS; c++) {
@@ -292,6 +279,10 @@ void leader_end_user(void) {
     layer_invert(_SYM);
     locked_layers = IS_LAYER_ON(_SYM) ? (locked_layers | (1 << _SYM))
                                       : (locked_layers & ~(1 << _SYM));
+  } else if (leader_sequence_one_key(KC_F)) {
+    layer_invert(_FN);
+    locked_layers = IS_LAYER_ON(_FN) ? (locked_layers | (1 << _FN))
+                                     : (locked_layers & ~(1 << _FN));
   } else if (leader_sequence_one_key(KC_TAB)) {
     layer_invert(_SYS);
     locked_layers = IS_LAYER_ON(_SYS) ? (locked_layers | (1 << _SYS))
@@ -306,18 +297,17 @@ void leader_end_user(void) {
 static painter_font_handle_t user_font;
 
 static const char *layer_names[] = {
-    [_BASE] = "Base", [_NAV] = "Nav",     [_SYM] = "Symbols",
-    [_FN] = "F-Keys", [_MOUSE] = "Mouse", [_SYS] = "System",
+    [_BASE] = "Base", [_NAV] = "Nav",    [_SYM] = "Symbols",
+    [_FN] = "F-Keys", [_SYS] = "System",
 };
 
 // HSV colors for display text (matching hlc_tft_display HSV scale)
 static const uint8_t layer_display_hsv[][3] = {
-    [_BASE] = {HSV_LAYER_0},  // white-ish
-    [_NAV] = {HSV_LAYER_1},   // orange
-    [_SYM] = {HSV_LAYER_2},   // yellow
-    [_FN] = {HSV_LAYER_3},    // red
-    [_MOUSE] = {HSV_LAYER_4}, // green
-    [_SYS] = {HSV_LAYER_5},   // purple
+    [_BASE] = {HSV_LAYER_0}, // white-ish
+    [_NAV] = {HSV_LAYER_1},  // orange
+    [_SYM] = {HSV_LAYER_2},  // yellow
+    [_FN] = {HSV_LAYER_3},   // red
+    [_SYS] = {HSV_LAYER_4},  // green
 };
 
 // Build modifier names into buf (max 16 bytes: "GUI ALT CTL SFT\0")
@@ -405,12 +395,12 @@ bool display_module_housekeeping_task_user(bool second_display) {
     // Clear entire surface
     qp_rect(lcd_surface, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, HSV_BLACK, true);
 
-    uint8_t h = (layer < 6) ? layer_display_hsv[layer][0] : 0;
-    uint8_t s = (layer < 6) ? layer_display_hsv[layer][1] : 255;
-    uint8_t v = (layer < 6) ? layer_display_hsv[layer][2] : 255;
+    uint8_t h = (layer < 5) ? layer_display_hsv[layer][0] : 0;
+    uint8_t s = (layer < 5) ? layer_display_hsv[layer][1] : 255;
+    uint8_t v = (layer < 5) ? layer_display_hsv[layer][2] : 255;
 
     // Draw layer name — centered horizontally, at the top
-    const char *name = (layer < 6) ? layer_names[layer] : "???";
+    const char *name = (layer < 5) ? layer_names[layer] : "???";
     int16_t tw = qp_textwidth(user_font, name);
     int16_t x = (LCD_WIDTH - tw) / 2;
     int16_t y = 8;
@@ -438,7 +428,7 @@ bool display_module_housekeeping_task_user(bool second_display) {
       cur_y += user_font->line_height + 4;
     }
 
-    // Held modifiers (from home row mods, etc.)
+    // Held modifiers
     char mod_buf[16];
     if (build_mod_str(mods, mod_buf)) {
       int16_t mw = qp_textwidth(user_font, mod_buf);
@@ -490,35 +480,11 @@ bool display_module_housekeeping_task_user(bool second_display) {
 
 #endif
 
-// ── Manual auto-mouse: activate _MOUSE layer on trackpad movement ──
-
-#ifdef POINTING_DEVICE_ENABLE
-static uint32_t auto_mouse_timer = 0;
-static bool auto_mouse_active = false;
-
-report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
-  if (mouse_report.x != 0 || mouse_report.y != 0) {
-    if (!auto_mouse_active && !layer_state_is(_MOUSE)) {
-      layer_on(_MOUSE);
-      auto_mouse_active = true;
-    }
-    auto_mouse_timer = timer_read32();
-  }
-  if (auto_mouse_active &&
-      timer_elapsed32(auto_mouse_timer) > AUTO_MOUSE_TIME) {
-    layer_off(_MOUSE);
-    auto_mouse_active = false;
-  }
-  return mouse_report;
-}
-#endif
-
 // ── Per-key tapping term ──
 
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
   case LCTL_T(KC_ESC):
-  case RCTL_T(KC_QUOT):
     return 200;
   default:
     return TAPPING_TERM;
