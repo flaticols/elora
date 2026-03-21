@@ -27,6 +27,16 @@
 
 #define HYPER OSM(MOD_HYPR)
 
+// Home row mods (CAGS order)
+#define HM_A LCTL_T(KC_A)
+#define HM_S LALT_T(KC_S)
+#define HM_D LGUI_T(KC_D)
+#define HM_F LSFT_T(KC_F)
+#define HM_J RSFT_T(KC_J)
+#define HM_K RGUI_T(KC_K)
+#define HM_L LALT_T(KC_L)
+#define HM_SCLN RCTL_T(KC_SCLN)
+
 // ── State tracking ──
 
 static uint8_t locked_layers = 0;
@@ -47,13 +57,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * ,-------------------------------------------.                              ,-------------------------------------------.
      * |   `    |   1  |   2  |   3  |   4  |   5  |                              |   6  |   7  |   8  |   9  |   0  |   =    |
      * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
-     * |Tab/Sys |   Q  |   W  |   E  |   R  |   T  |                              |   Y  |   U  |   I  |   O  |   P  |  Del   |
+     * | Redo   |   Q  |   W  |   E  |   R  |   T  |                              |   Y  |   U  |   I  |   O  |   P  |  - _   |
      * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
-     * |Ctl/Esc |   A  |   S  |   D  |   F  |   G  |                              |   H  |   J  |   K  |   L  |   ;  |   ' "  |
+     * |  Esc   | A/Ctl| S/Alt| D/Gui| F/Sft|   G  |                              |   H  | J/Sft| K/Gui| L/Alt| ;/Ctl|   ' "  |
      * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
-     * | LShift |   Z  |   X  |   C  |   V  |   B  |Leader| MO3  |  |OSL(1)|Leader|   N  |   M  |  , < |  . > |  / ? | RShift |
+     * |OSM Sft |   Z  |   X  |   C  |   V  |   B  |Leader|OSL3  |  |OSL(1)|Leader|   N  |   M  |  , < |  . > |  / ? |  ` ~   |
      * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
-     *                        |CapsWd| LOpt | LCmd |Spc/Nv|Hyper |  |Bsp/Sm| Enter| RCmd | ROpt | RCtl |
+     *                        |CapsWd|OSL Sy|  Tab |Spc/Nv|Hyper |  |Bsp/Sm| Enter|  Del |OSL Sy| Undo |
      *                        `----------------------------------'  `----------------------------------'
      * ,-----------------------------------.                                              ,-----------------------------------.
      * | LAlt |      |       |      |      |                                              |OSL(2)|      |       |      |      |
@@ -63,10 +73,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_BASE] = LAYOUT_elora_hlc(
         KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                                         KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_EQL,
-        LT(_SYS, KC_TAB), KC_Q, KC_W, KC_E,    KC_R,    KC_T,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_DEL,
-        LCTL_T(KC_ESC), KC_A, KC_S, KC_D, KC_F, KC_G,                                              KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
-        KC_LSFT, KC_Z, KC_X,    KC_C,    KC_V,    KC_B,    QK_LEAD, MO(3),   OSL(1),  QK_LEAD, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
-                                   CW_TOGG, KC_LALT, KC_LGUI, LT(_NAV, KC_SPC), HYPER, LT(_SYM, KC_BSPC), KC_ENT, KC_RGUI, KC_RALT, KC_RCTL,
+        G(S(KC_Z)), KC_Q, KC_W, KC_E,    KC_R,    KC_T,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_MINS,
+        KC_ESC, HM_A, HM_S, HM_D, HM_F, KC_G,                                              KC_H,    HM_J,    HM_K,    HM_L,    HM_SCLN, KC_QUOT,
+        OSM(MOD_LSFT), KC_Z, KC_X,    KC_C,    KC_V,    KC_B,    QK_LEAD, OSL(3),   OSL(1),  QK_LEAD, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_GRV,
+                                   CW_TOGG, OSL(_SYS), KC_TAB, LT(_NAV, KC_SPC), HYPER, LT(_SYM, KC_BSPC), KC_ENT, KC_DEL, OSL(_SYS), G(KC_Z),
         KC_LALT, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         OSL(2),  KC_NO,   KC_NO,   KC_NO,   KC_NO
     ),
 
@@ -484,7 +494,8 @@ bool display_module_housekeeping_task_user(bool second_display) {
 
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
-  case LCTL_T(KC_ESC):
+  case HM_A: case HM_S: case HM_D: case HM_F:
+  case HM_J: case HM_K: case HM_L: case HM_SCLN:
     return 200;
   default:
     return TAPPING_TERM;

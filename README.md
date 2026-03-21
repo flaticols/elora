@@ -10,6 +10,7 @@ Custom QMK firmware for a [splitkb Elora Rev2](https://splitkb.com/products/elor
 - **Per-key RGB** — optional, off by default, toggle with RM_TOGG; active keys glow in layer color
 - **Leader key** (both halves) for layer locking
 - **One-shot Hyper** (Cmd+Ctrl+Alt+Shift) for app shortcuts via Raycast/Kitty/Zed
+- **Home row mods** (CAGS: Ctrl-Alt-Gui-Shift) with Chordal Hold for misfire prevention
 - **5 layers**: Base, Navigation, Symbols, F-keys+Media, System
 - **Caps Word** support
 
@@ -19,22 +20,35 @@ Custom QMK firmware for a [splitkb Elora Rev2](https://splitkb.com/products/elor
 |-----|----------|-----|------|
 | Space | Left thumb | Space | Nav layer |
 | Backspace | Right thumb | Backspace | Symbols layer |
-| Tab | Top-left | Tab | System layer |
-| Escape | Left home row | Escape | Left Ctrl |
-| Del | Top-right | Forward delete | — |
+| Redo | Top-left | Cmd+Shift+Z | — |
+| Escape | Left home row | Escape | — |
+| - _ | Top-right | Minus/underscore | — |
 | ' " | Right home row | Quote | — |
-| LShift | Bottom-left | Left Shift | — |
-| RShift | Bottom-right | Right Shift | — |
+| OSM Shift | Bottom-left | One-shot Left Shift | — |
+| ` ~ | Bottom-right | Grave/tilde | — |
 | CapsWord | Left thumb (outer) | Toggle Caps Word | — |
-| LOpt | Left thumb | Left Option | — |
-| LCmd | Left thumb | Left Cmd | — |
+| OSL Sys | Left thumb | One-shot System layer | — |
+| Tab | Left thumb | Tab | — |
 | Hyper | Left thumb (inner) | One-shot Hyper | — |
 | Enter | Right thumb | Enter/Return | — |
-| RCmd | Right thumb | Right Cmd | — |
-| ROpt | Right thumb | Right Option | — |
-| RCtl | Right thumb | Right Ctrl | — |
+| Del | Right thumb | Forward delete | — |
+| OSL Sys | Right thumb | One-shot System layer | — |
+| Undo | Right thumb (outer) | Cmd+Z | — |
 | Leader | Left/Right inner | Start leader sequence | — |
-| MO3 | Left inner | — | F-Keys layer |
+| OSL3 | Left inner | One-shot F-Keys layer | — |
+
+### Home Row Mods (CAGS)
+
+| Key | Tap | Hold |
+|-----|-----|------|
+| A | a | Left Ctrl |
+| S | s | Left Alt |
+| D | d | Left Gui |
+| F | f | Left Shift |
+| J | j | Right Shift |
+| K | k | Right Gui |
+| L | l | Right Alt |
+| ; | ; | Right Ctrl |
 
 ### Leader Key Sequences
 
@@ -74,13 +88,13 @@ Shows from top to bottom:
 ┌─────┬─────┬─────┬─────┬─────┬─────┐                              ┌─────┬─────┬─────┬─────┬─────┬─────┐
 │  `  │  1  │  2  │  3  │  4  │  5  │                              │  6  │  7  │  8  │  9  │  0  │  =  │
 ├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│Tb/Sy│  Q  │  W  │  E  │  R  │  T  │                              │  Y  │  U  │  I  │  O  │  P  │ Del │
+│Redo │  Q  │  W  │  E  │  R  │  T  │                              │  Y  │  U  │  I  │  O  │  P  │ - _ │
 ├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│C/Esc│  A  │  S  │  D  │  F  │  G  │                              │  H  │  J  │  K  │  L  │  ;  │  '  │
+│ Esc │A/Ctl│S/Alt│D/Gui│F/Sft│  G  │                              │  H  │J/Sft│K/Gui│L/Alt│;/Ctl│  '  │
 ├─────┼─────┼─────┼─────┼─────┼─────┼─────┬─────┐  ┌─────┬─────┼─────┼─────┼─────┼─────┼─────┼─────┤
-│L⇧   │  Z  │  X  │  C  │  V  │  B  │Lead │ MO3 │  │OSL1 │Lead │  N  │  M  │  ,  │  .  │  /  │  R⇧ │
+│OSM⇧ │  Z  │  X  │  C  │  V  │  B  │Lead │OSL3 │  │OSL1 │Lead │  N  │  M  │  ,  │  .  │  /  │  ` ~│
 └─────┴─────┴─────┼─────┼─────┼─────┼─────┼─────┤  ├─────┼─────┼─────┼─────┼─────┼─────┴─────┴─────┘
-                  │CapsW│LOpt │LCmd │Sp/Nv│Hyper│  │Bs/Sm│Enter│RCmd │ROpt │RCtl │
+                  │CapsW│OSLSy│ Tab │Sp/Nv│Hyper│  │Bs/Sm│Enter│ Del │OSLSy│Undo │
                   └─────┴─────┴─────┴─────┴─────┘  └─────┴─────┴─────┴─────┴─────┘
 ┌─────┬─────┬─────┬─────┬─────┐                              ┌─────┬─────┬─────┬─────┬─────┐
 │LAlt │     │     │     │     │  MODULE ROW                   │OSL2 │     │     │     │     │
@@ -89,26 +103,26 @@ Shows from top to bottom:
 
 | Area | Key | Tap | Hold |
 |------|-----|-----|------|
-| Top left | Tb/Sy | Tab | System layer (4) |
-| Top right | Del | Forward delete | — |
-| Home row L | C/Esc | Escape | Left Ctrl |
+| Top left | Redo | Cmd+Shift+Z | — |
+| Top right | - _ | Minus/underscore | — |
+| Home row L | Esc | Escape | — |
 | Home row R | ' | Quote | — |
-| Bottom-left | L⇧ | Left Shift | — |
-| Bottom-right | R⇧ | Right Shift | — |
+| Bottom-left | OSM⇧ | One-shot Left Shift | — |
+| Bottom-right | ` ~ | Grave/tilde | — |
 | Inner L | Lead | Start leader sequence | — |
-| Inner L | MO3 | — | F-Keys layer (3) |
+| Inner L | OSL3 | One-shot F-Keys layer (3) | — |
 | Inner R | OSL1 | One-shot Nav layer | — |
 | Inner R | Lead | Start leader sequence | — |
 | Thumb L | CapsW | Toggle Caps Word | — |
-| Thumb L | LOpt | Left Option | — |
-| Thumb L | LCmd | Left Cmd | — |
+| Thumb L | OSLSy | One-shot System layer (4) | — |
+| Thumb L | Tab | Tab | — |
 | Thumb L | Sp/Nv | Space | Nav layer (1) |
 | Thumb L | Hyper | One-shot Hyper (⌘⌃⌥⇧) | — |
 | Thumb R | Bs/Sm | Backspace | Symbols layer (2) |
 | Thumb R | Enter | Enter/Return | — |
-| Thumb R | RCmd | Right Cmd | — |
-| Thumb R | ROpt | Right Option | — |
-| Thumb R | RCtl | Right Ctrl | — |
+| Thumb R | Del | Forward delete | — |
+| Thumb R | OSLSy | One-shot System layer (4) | — |
+| Thumb R | Undo | Cmd+Z | — |
 | Module L | LAlt | Left Alt/Option | — |
 | Module R | OSL2 | One-shot Symbols layer | — |
 
@@ -150,7 +164,7 @@ Right: HJKL arrows, Home/End/PgUp/PgDn. ⌥arrows = word/paragraph movement.
 
 Left hand = brackets (open on home row, close below). Right hand = operators. No shift needed for any symbol.
 
-### Layer 3 — F-Keys + Media (hold MO3)
+### Layer 3 — F-Keys + Media (OSL3)
 
 ```
 ┌─────┬─────┬─────┬─────┬─────┬─────┐                              ┌─────┬─────┬─────┬─────┬─────┬─────┐
@@ -168,7 +182,7 @@ Left hand = brackets (open on home row, close below). Right hand = operators. No
 
 RGB = `RM_TOGG` (toggle per-key backlight on/off). F-keys row mirrors number row positions.
 
-### Layer 4 — System (hold Tab)
+### Layer 4 — System (OSL Sys)
 
 ```
 ┌─────┬─────┬─────┬─────┬─────┬─────┐                              ┌─────┬─────┬─────┬─────┬─────┬─────┐
