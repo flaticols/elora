@@ -111,16 +111,20 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     /* Layer 5 — Function + macOS window management
-     * Left F-row keys + mods are kept from elora.vil; the free left-hand keys
-     * now carry the Globe key and one-press window-tiling chords:
-     *   home outer (Caps spot) = Center, home inner (G spot) = Return
-     *   bottom row: Globe | ← half | ↑ half | ↓ half | → half | Fill
+     * Right hand keeps F1-F24; left hand carries Globe + tiling chords.
+     * Letter actions (work out of the box):
+     *   C = Center, B = Fill, G = Return    (Ctrl+Globe+{C,F,R})
+     * Arrow halves on top row Q/W/E/R = ←/↑/↓/→ (Ctrl+Globe+arrow).
+     *   NOTE: arrows need the conflicting Mission Control shortcuts
+     *   (Ctrl+arrows) disabled in macOS System Settings, otherwise macOS
+     *   intercepts them (switch Space / App Exposé) before tiling.
+     * Globe = raw Fn (bottom-row outer pinky) for emoji/dictation/manual use.
      */
     [_FN] = LAYOUT_elora_hlc(
         KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
-        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_F1, KC_F2, KC_F3, KC_F4, KC_NO, KC_NO,
-        WM_CNTR, KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT, WM_RTRN, KC_F5, KC_F6, KC_F7, KC_F8, KC_NO, KC_NO,
-        AP_GLOB, WM_LEFT, WM_TOP, WM_BOTM, WM_RGHT, WM_FILL, KC_NO, KC_NO, KC_NO, KC_NO, KC_F9, KC_F10, KC_F11, KC_F12, KC_NO, KC_NO,
+        KC_NO, WM_LEFT, WM_TOP, WM_BOTM, WM_RGHT, KC_NO, KC_F1, KC_F2, KC_F3, KC_F4, KC_NO, KC_NO,
+        KC_NO, KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT, WM_RTRN, KC_F5, KC_F6, KC_F7, KC_F8, KC_NO, KC_NO,
+        AP_GLOB, KC_NO, KC_NO, WM_CNTR, KC_NO, WM_FILL, KC_NO, KC_NO, KC_NO, KC_NO, KC_F9, KC_F10, KC_F11, KC_F12, KC_NO, KC_NO,
         KC_NO, KC_NO, KC_NO, KC_NO, KC_CAPS, KC_F24, KC_NO, KC_NO, KC_NO, KC_NO,
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS
     ),
