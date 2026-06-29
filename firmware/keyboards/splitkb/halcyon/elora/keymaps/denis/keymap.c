@@ -1,12 +1,19 @@
 /**
- * Elora Rev2 — Denis's keymap (compiled from elora-optimized.vil)
+ * Elora Rev2 — Denis's keymap (faithful translation of elora.vil)
  *
- * Features:
- *   - TFT display (left half): layer name at top + LOCK/HYPER/CAPS/RGB status
- *   - RGB: optional per-key backlight (toggle via RM_TOGG), off by default
- *   - Per-key tapping term for mod-taps
- *   - Chordal hold (bilateral combos)
- *   - Leader key: lock layers via Leader→Space/Bksp/Tab = TG(Nav/Sym/Sys)
+ * Layers (matching elora.vil exactly):
+ *   0 QWERTY   — base
+ *   1 Dvorak   — alternate base (defined; bind a DF() key to reach it)
+ *   2 Colemak  — alternate base (defined; bind a DF() key to reach it)
+ *   3 Nav      — arrows / nav / media (LT3 on Space)
+ *   4 Sym      — numbers + symbols (LT4 on Backspace)
+ *   5 Function — F-keys + mods (LT5/TT5 on Tab)
+ *   6 / 7      — reserved (transparent)
+ *
+ * Hardware features kept from the previous build:
+ *   - TFT display (left half): current layer name + status indicators
+ *   - Per-key RGB backlight, off by default (toggle via RM_TOGG)
+ *   - Encoder map (volume / page / arrows per elora.vil)
  */
 
 #include QMK_KEYBOARD_H
@@ -17,30 +24,36 @@
 #include "hlc_tft_display/hlc_tft_display.h"
 #endif
 
-// ── Aliases ──
+// ── Layers ──
 
-#define _BASE 0
-#define _NAV 1
-#define _SYM 2
-#define _FN 3
-#define _SYS 4
+enum layers {
+    _QWERTY = 0,
+    _DVORAK,
+    _COLEMAK,
+    _NAV,
+    _SYM,
+    _FN,
+    _L6,
+    _L7,
+};
 
-#define HYPER OSM(MOD_HYPR)
+// ── Custom keycodes ──
+// macOS Globe/Fn key + one-press window-management chords (macOS 26 tiling).
+// All tiling actions are Control + Globe + <key>; the WM_* keys inject the
+// whole chord themselves, so a single tap triggers the action.
 
-// Home row mods (CAGS order)
-#define HM_A LCTL_T(KC_A)
-#define HM_S LALT_T(KC_S)
-#define HM_D LGUI_T(KC_D)
-#define HM_F LSFT_T(KC_F)
-#define HM_J RSFT_T(KC_J)
-#define HM_K RGUI_T(KC_K)
-#define HM_L LALT_T(KC_L)
-#define HM_SCLN RCTL_T(KC_SCLN)
+enum custom_keycodes {
+    AP_GLOB = SAFE_RANGE, // raw Globe (Fn) — emoji/dictation/manual chords
+    WM_FILL,              // Ctrl+Globe+F  — fill desktop
+    WM_CNTR,              // Ctrl+Globe+C  — center
+    WM_RTRN,              // Ctrl+Globe+R  — return to previous size
+    WM_LEFT,              // Ctrl+Globe+←  — left half
+    WM_RGHT,              // Ctrl+Globe+→  — right half
+    WM_TOP,               // Ctrl+Globe+↑  — top half
+    WM_BOTM,              // Ctrl+Globe+↓  — bottom half
+};
 
 // ── State tracking ──
-
-static uint8_t locked_layers = 0;
-static bool leader_active = false;
 
 #ifdef RGB_MATRIX_ENABLE
 static bool rgb_user_enabled = false; // RGB backlight off by default
@@ -48,98 +61,103 @@ static bool rgb_user_enabled = false; // RGB backlight off by default
 
 // clang-format off
 
-// ── Keymaps (translated from elora-optimized.vil) ──
+// ── Keymaps (generated from elora.vil) ──
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-    /* Layer 0 — Base (QWERTY)
-     *
-     * ,-------------------------------------------.                              ,-------------------------------------------.
-     * |   `    |   1  |   2  |   3  |   4  |   5  |                              |   6  |   7  |   8  |   9  |   0  |   =    |
-     * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
-     * | Redo   |   Q  |   W  |   E  |   R  |   T  |                              |   Y  |   U  |   I  |   O  |   P  |  - _   |
-     * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
-     * |  Esc   | A/Ctl| S/Alt| D/Gui| F/Sft|   G  |                              |   H  | J/Sft| K/Gui| L/Alt| ;/Ctl|   ' "  |
-     * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
-     * |OSM Sft |   Z  |   X  |   C  |   V  |   B  |Leader|OSL3  |  |OSL(1)|Leader|   N  |   M  |  , < |  . > |  / ? |  ` ~   |
-     * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
-     *                        |CapsWd|OSL Sy|  Tab |Spc/Nv|Hyper |  |Bsp/Sm| Enter|  Del |OSL Sy| Undo |
-     *                        `----------------------------------'  `----------------------------------'
-     * ,-----------------------------------.                                              ,-----------------------------------.
-     * | LAlt |      |       |      |      |                                              |OSL(2)|      |       |      |      |
-     * `-----------------------------------'                                              `-----------------------------------'
-     *
-     * Leader sequences: Leader→Space = TG(Nav), Leader→Bksp = TG(Sym), Leader→Tab = TG(Sys)
-     */
-    [_BASE] = LAYOUT_elora_hlc(
-        KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                                         KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_EQL,
-        G(S(KC_Z)), KC_Q, KC_W, KC_E,    KC_R,    KC_T,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_MINS,
-        KC_ESC, HM_A, HM_S, HM_D, HM_F, KC_G,                                              KC_H,    HM_J,    HM_K,    HM_L,    HM_SCLN, KC_QUOT,
-        OSM(MOD_LSFT), KC_Z, KC_X,    KC_C,    KC_V,    KC_B,    QK_LEAD, OSL(3),   OSL(1),  QK_LEAD, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_GRV,
-                                   CW_TOGG, OSL(_SYS), KC_TAB, LT(_NAV, KC_SPC), HYPER, LT(_SYM, KC_BSPC), KC_ENT, KC_DEL, OSL(_SYS), G(KC_Z),
-        KC_LALT, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         OSL(2),  KC_NO,   KC_NO,   KC_NO,   KC_NO
+    [_QWERTY] = LAYOUT_elora_hlc(
+        KC_GRV, KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9, KC_0, KC_EQL,
+        LT(5, KC_TAB), KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_DEL,
+        LCTL_T(KC_ESC), KC_A, KC_S, KC_D, KC_F, KC_G, KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
+        KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B, KC_LBRC, KC_MINS, LSFT(KC_MINS), KC_RBRC, KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT,
+        TT(5), KC_LALT, KC_ENT, KC_LGUI, OSM(MOD_HYPR), LT(4, KC_BSPC), LT(3, KC_SPC), KC_RGUI, KC_LCTL, QK_CAPS_WORD_TOGGLE,
+        KC_MUTE, KC_NO, KC_NO, KC_NO, KC_NO, KC_MUTE, KC_NO, KC_NO, KC_NO, KC_NO
     ),
 
-    /* Layer 1 — Navigation */
+    [_DVORAK] = LAYOUT_elora_hlc(
+        KC_ESC, KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9, KC_0, KC_ESC,
+        KC_TAB, KC_QUOT, KC_COMM, KC_DOT, KC_P, KC_Y, KC_F, KC_G, KC_C, KC_R, KC_L, KC_BSPC,
+        LCTL_T(KC_ESC), KC_A, KC_O, KC_E, KC_U, KC_I, KC_D, KC_H, KC_T, KC_N, KC_S, RCTL_T(KC_MINS),
+        KC_LSFT, KC_SCLN, KC_Q, KC_J, KC_K, KC_X, KC_LBRC, KC_CAPS, MO(5), KC_RBRC, KC_B, KC_M, KC_W, KC_V, KC_Z, KC_RSFT,
+        MO(6), KC_LGUI, LALT_T(KC_ENT), KC_SPC, MO(3), MO(4), KC_SPC, KC_RALT, KC_RGUI, KC_APP,
+        KC_MUTE, KC_NO, KC_NO, KC_NO, KC_NO, KC_MUTE, KC_NO, KC_NO, KC_NO, KC_NO
+    ),
+
+    [_COLEMAK] = LAYOUT_elora_hlc(
+        KC_ESC, KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9, KC_0, KC_ESC,
+        KC_TAB, KC_Q, KC_W, KC_F, KC_P, KC_B, KC_J, KC_L, KC_U, KC_Y, KC_SCLN, KC_BSPC,
+        LCTL_T(KC_ESC), KC_A, KC_R, KC_S, KC_T, KC_G, KC_M, KC_N, KC_E, KC_I, KC_O, RCTL_T(KC_QUOT),
+        KC_LSFT, KC_Z, KC_X, KC_C, KC_D, KC_V, KC_LBRC, KC_CAPS, MO(5), KC_RBRC, KC_K, KC_H, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT,
+        MO(6), KC_LGUI, LALT_T(KC_ENT), KC_SPC, MO(3), MO(4), KC_SPC, KC_RALT, KC_RGUI, KC_APP,
+        KC_MUTE, KC_NO, KC_NO, KC_NO, KC_NO, KC_MUTE, KC_NO, KC_NO, KC_NO, KC_NO
+    ),
+
     [_NAV] = LAYOUT_elora_hlc(
-        _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
-        _______, G(KC_GRV), C(KC_LEFT), C(KC_RGHT), C(KC_UP), C(KC_DOWN),                         KC_HOME, KC_PGDN, KC_PGUP, KC_END,  KC_INS,  KC_BSPC,
-        _______, _______, _______, _______, _______, _______,                                      KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______, _______,
-        _______, G(KC_N), G(KC_T), G(KC_W), G(KC_LBRC), G(KC_RBRC), _______, _______, _______, _______, A(KC_LEFT), A(KC_DOWN), A(KC_UP), A(KC_RGHT), _______, _______,
-                                   _______, _______, _______, _______, _______,  _______, _______, _______, _______, _______,
-        _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_HOME, KC_PGDN, KC_PGUP, KC_END, KC_VOLU, KC_DEL,
+        KC_TRNS, OSM(MOD_LGUI), OSM(MOD_LALT), OSM(MOD_LCTL), OSM(MOD_LSFT), KC_TRNS, KC_LEFT, KC_DOWN, KC_UP, KC_RIGHT, KC_VOLD, KC_INS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_SCRL, KC_TRNS, KC_TRNS, KC_PAUS, KC_MPRV, KC_MPLY, KC_MNXT, KC_MUTE, KC_PSCR,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS
     ),
 
-    /* Layer 2 — Symbols */
     [_SYM] = LAYOUT_elora_hlc(
-        _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
-        _______, S(KC_1), S(KC_2), S(KC_3), S(KC_4), S(KC_5),                                     S(KC_6), S(KC_7), S(KC_8), S(KC_EQL), KC_EQL, KC_BSPC,
-        _______, KC_GRV,  S(KC_COMM), S(KC_LBRC), KC_LBRC, S(KC_9),                               S(KC_MINS), KC_MINS, KC_SLSH, KC_BSLS, S(KC_BSLS), S(KC_QUOT),
-        _______, S(KC_GRV), S(KC_DOT), S(KC_RBRC), KC_RBRC, S(KC_0), _______, _______, _______, _______, S(KC_SCLN), KC_SCLN, S(KC_SLSH), _______, _______, _______,
-                                   _______, _______, _______, _______, _______,  _______, _______, _______, _______, _______,
-        _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_GRV, KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9, KC_0, KC_EQL,
+        LSFT(KC_GRV), LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5), LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), LSFT(KC_EQL),
+        LSFT(KC_BSLS), KC_BSLS, LSFT(KC_SCLN), KC_SCLN, KC_MINS, KC_LBRC, LSFT(KC_LBRC), KC_TRNS, KC_TRNS, LSFT(KC_RBRC), KC_RBRC, LSFT(KC_MINS), KC_COMM, KC_DOT, KC_SLSH, LSFT(KC_SLSH),
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS
     ),
 
-    /* Layer 3 — F-Keys + Media */
+    /* Layer 5 — Function + macOS window management
+     * Left F-row keys + mods are kept from elora.vil; the free left-hand keys
+     * now carry the Globe key and one-press window-tiling chords:
+     *   home outer (Caps spot) = Center, home inner (G spot) = Return
+     *   bottom row: Globe | ← half | ↑ half | ↓ half | → half | Fill
+     */
     [_FN] = LAYOUT_elora_hlc(
-        KC_F11,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                                       KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F12,
-        _______, _______, KC_BRIU, KC_BRID, _______, _______,                                      _______, _______, _______, _______, _______, _______,
-        _______, _______, KC_MNXT, KC_MPLY, KC_MPRV, _______,                                      _______, KC_VOLD, KC_VOLU, KC_MUTE, RM_TOGG, _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-                                   _______, _______, _______, _______, _______,  _______, _______, _______, _______, _______,
-        _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO
+        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
+        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_F1, KC_F2, KC_F3, KC_F4, KC_NO, KC_NO,
+        WM_CNTR, KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT, WM_RTRN, KC_F5, KC_F6, KC_F7, KC_F8, KC_NO, KC_NO,
+        AP_GLOB, WM_LEFT, WM_TOP, WM_BOTM, WM_RGHT, WM_FILL, KC_NO, KC_NO, KC_NO, KC_NO, KC_F9, KC_F10, KC_F11, KC_F12, KC_NO, KC_NO,
+        KC_NO, KC_NO, KC_NO, KC_NO, KC_CAPS, KC_F24, KC_NO, KC_NO, KC_NO, KC_NO,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS
     ),
 
-    /* Layer 4 — System */
-    [_SYS] = LAYOUT_elora_hlc(
-        _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
-        _______, _______, _______, SGUI(KC_3), SGUI(KC_4), SGUI(KC_5),                             _______, _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, _______,                                      C(KC_LEFT), C(KC_DOWN), C(KC_UP), C(KC_RGHT), _______, _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, G(KC_H), G(KC_M), G(KC_Q), _______, _______, _______,
-                                   _______, _______, _______, _______, _______,  _______, _______, _______, _______, _______,
-        _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO
+    [_L6] = LAYOUT_elora_hlc(
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS
     ),
 
-    /* Layer 5 — Reserved (transparent) */
-    [5] = LAYOUT_elora_hlc(
-        _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-                                   _______, _______, _______, _______, _______,  _______, _______, _______, _______, _______,
-        _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO
-    ),
-
-    /* Layer 6 — Reserved (transparent) */
-    [6] = LAYOUT_elora_hlc(
-        _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, _______,                                      _______, _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-                                   _______, _______, _______, _______, _______,  _______, _______, _______, _______, _______,
-        _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,                                                         _______, KC_NO,   KC_NO,   KC_NO,   KC_NO
+    [_L7] = LAYOUT_elora_hlc(
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS
     ),
 };
+
+// ── Encoder map (4 encoders: L soldered, L module, R soldered, R module) ──
+
+#ifdef ENCODER_MAP_ENABLE
+const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
+    [_QWERTY] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_PGUP, KC_PGDN), ENCODER_CCW_CW(KC_PGUP, KC_PGDN) },
+    [_DVORAK] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_PGUP, KC_PGDN), ENCODER_CCW_CW(KC_PGUP, KC_PGDN) },
+    [_COLEMAK] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_PGUP, KC_PGDN), ENCODER_CCW_CW(KC_PGUP, KC_PGDN) },
+    [_NAV] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_PGUP, KC_PGDN), ENCODER_CCW_CW(KC_PGUP, KC_PGDN) },
+    [_SYM] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_PGUP, KC_PGDN), ENCODER_CCW_CW(KC_PGUP, KC_PGDN) },
+    [_FN] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_PGUP, KC_PGDN), ENCODER_CCW_CW(KC_PGUP, KC_PGDN) },
+    [_L6] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_PGUP, KC_PGDN), ENCODER_CCW_CW(KC_PGUP, KC_PGDN) },
+    [_L7] = { ENCODER_CCW_CW(KC_TRNS, KC_TRNS), ENCODER_CCW_CW(KC_TRNS, KC_TRNS), ENCODER_CCW_CW(KC_TRNS, KC_TRNS), ENCODER_CCW_CW(KC_TRNS, KC_TRNS) },
+};
+#endif
 
 // clang-format on
 
@@ -167,11 +185,36 @@ void keyboard_post_init_user(void) {
 #endif
 }
 
-// ── RGB toggle (RM_TOGG toggles per-key backlight; other RGB keys blocked) ──
+// ── macOS Globe chord: hold Ctrl + Globe (consumer 0x29D), tap a key ──
+// Requires KEYBOARD_SHARED_EP = yes so the consumer (Globe) and keyboard
+// (Ctrl + key) reports coexist in one chord.
 
-#ifdef RGB_MATRIX_ENABLE
+static void mac_globe_chord(uint16_t tapkey) {
+  register_mods(MOD_BIT(KC_LCTL));
+  host_consumer_send(AC_NEXT_KEYBOARD_LAYOUT_SELECT); // Globe down
+  wait_ms(5);
+  tap_code16(tapkey);
+  host_consumer_send(0); // Globe up
+  unregister_mods(MOD_BIT(KC_LCTL));
+}
+
+// ── Process keycodes: Globe + window management, plus RGB toggle ──
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
+  case AP_GLOB:
+    // Raw Globe/Fn: held while pressed (emoji picker, dictation, manual chords)
+    host_consumer_send(record->event.pressed ? AC_NEXT_KEYBOARD_LAYOUT_SELECT
+                                             : 0);
+    return false;
+  case WM_FILL: if (record->event.pressed) mac_globe_chord(KC_F);     return false;
+  case WM_CNTR: if (record->event.pressed) mac_globe_chord(KC_C);     return false;
+  case WM_RTRN: if (record->event.pressed) mac_globe_chord(KC_R);     return false;
+  case WM_LEFT: if (record->event.pressed) mac_globe_chord(KC_LEFT);  return false;
+  case WM_RGHT: if (record->event.pressed) mac_globe_chord(KC_RIGHT); return false;
+  case WM_TOP:  if (record->event.pressed) mac_globe_chord(KC_UP);    return false;
+  case WM_BOTM: if (record->event.pressed) mac_globe_chord(KC_DOWN);  return false;
+#ifdef RGB_MATRIX_ENABLE
   case RM_TOGG:
     if (record->event.pressed) {
       rgb_user_enabled = !rgb_user_enabled;
@@ -189,6 +232,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   case RM_SPDU:
   case RM_SPDD:
     return false;
+#endif
   default:
     return true;
   }
@@ -196,12 +240,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 // ── Per-layer colors: per-key only (underglow replaced by TFT display) ──
 
+#ifdef RGB_MATRIX_ENABLE
+// Layers 0/1/2 are base alphas (LEDs off); 3+ are momentary layers.
+
 static const uint8_t layer_colors[][3] = {
-    [_BASE] = {0, 0, 0},    // off
-    [_NAV] = {0, 200, 200}, // cyan
-    [_SYM] = {180, 0, 255}, // purple
-    [_FN] = {255, 60, 0},   // red-orange
-    [_SYS] = {255, 200, 0}, // yellow
+    [_QWERTY] = {0, 0, 0},    // off
+    [_DVORAK] = {0, 0, 0},    // off
+    [_COLEMAK] = {0, 0, 0},   // off
+    [_NAV] = {0, 200, 200},   // cyan
+    [_SYM] = {180, 0, 255},   // purple
+    [_FN] = {255, 60, 0},     // red-orange
+    [_L6] = {0, 0, 0},        // off
+    [_L7] = {0, 0, 0},        // off
 };
 
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
@@ -219,17 +269,17 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
   uint8_t layer = get_highest_layer(layer_state | default_layer_state);
 
-  // Base layer: all LEDs off
-  if (layer == 0) {
+  // Base alpha layers (QWERTY/Dvorak/Colemak): all LEDs off
+  if (layer <= _COLEMAK) {
     for (uint8_t i = led_min; i < led_max; i++) {
       rgb_matrix_set_color(i, 0, 0, 0);
     }
     return false;
   }
 
-  uint8_t r_val = layer < 5 ? layer_colors[layer][0] : 255;
-  uint8_t g_val = layer < 5 ? layer_colors[layer][1] : 255;
-  uint8_t b_val = layer < 5 ? layer_colors[layer][2] : 255;
+  uint8_t r_val = layer_colors[layer][0];
+  uint8_t g_val = layer_colors[layer][1];
+  uint8_t b_val = layer_colors[layer][2];
 
   for (uint8_t r = 0; r < MATRIX_ROWS; r++) {
     for (uint8_t c = 0; c < MATRIX_COLS; c++) {
@@ -275,31 +325,6 @@ void housekeeping_task_user(void) {
 }
 #endif
 
-// ── Leader key: lock layers via TG ──
-
-void leader_start_user(void) { leader_active = true; }
-
-void leader_end_user(void) {
-  leader_active = false;
-  if (leader_sequence_one_key(KC_SPC)) {
-    layer_invert(_NAV);
-    locked_layers = IS_LAYER_ON(_NAV) ? (locked_layers | (1 << _NAV))
-                                      : (locked_layers & ~(1 << _NAV));
-  } else if (leader_sequence_one_key(KC_BSPC)) {
-    layer_invert(_SYM);
-    locked_layers = IS_LAYER_ON(_SYM) ? (locked_layers | (1 << _SYM))
-                                      : (locked_layers & ~(1 << _SYM));
-  } else if (leader_sequence_one_key(KC_F)) {
-    layer_invert(_FN);
-    locked_layers = IS_LAYER_ON(_FN) ? (locked_layers | (1 << _FN))
-                                     : (locked_layers & ~(1 << _FN));
-  } else if (leader_sequence_one_key(KC_TAB)) {
-    layer_invert(_SYS);
-    locked_layers = IS_LAYER_ON(_SYS) ? (locked_layers | (1 << _SYS))
-                                      : (locked_layers & ~(1 << _SYS));
-  }
-}
-
 // ── TFT Display: layer name + status (left half) ──
 
 #ifdef HLC_TFT_DISPLAY
@@ -307,17 +332,17 @@ void leader_end_user(void) {
 static painter_font_handle_t user_font;
 
 static const char *layer_names[] = {
-    [_BASE] = "Base", [_NAV] = "Nav",    [_SYM] = "Symbols",
-    [_FN] = "F-Keys", [_SYS] = "System",
+    [_QWERTY] = "QWERTY", [_DVORAK] = "Dvorak", [_COLEMAK] = "Colemak",
+    [_NAV] = "Nav",       [_SYM] = "Symbols",   [_FN] = "F-Keys",
+    [_L6] = "Layer 6",    [_L7] = "Layer 7",
 };
 
 // HSV colors for display text (matching hlc_tft_display HSV scale)
 static const uint8_t layer_display_hsv[][3] = {
-    [_BASE] = {HSV_LAYER_0}, // white-ish
-    [_NAV] = {HSV_LAYER_1},  // orange
-    [_SYM] = {HSV_LAYER_2},  // yellow
-    [_FN] = {HSV_LAYER_3},   // red
-    [_SYS] = {HSV_LAYER_4},  // green
+    [_QWERTY] = {HSV_LAYER_0}, [_DVORAK] = {HSV_LAYER_0},
+    [_COLEMAK] = {HSV_LAYER_0}, [_NAV] = {HSV_LAYER_1},
+    [_SYM] = {HSV_LAYER_2}, [_FN] = {HSV_LAYER_3},
+    [_L6] = {HSV_LAYER_4}, [_L7] = {HSV_LAYER_4},
 };
 
 // Build modifier names into buf (max 16 bytes: "GUI ALT CTL SFT\0")
@@ -383,16 +408,12 @@ bool display_module_housekeeping_task_user(bool second_display) {
   static uint8_t last_mods = 0xFF;
   static uint8_t last_osm = 0xFF;
   static bool last_cw = false;
-  static bool last_lock = false;
   static bool last_rgb = false;
-  static bool last_lead = false;
 
   uint8_t layer = get_highest_layer(layer_state | default_layer_state);
   uint8_t mods = get_mods();
   uint8_t osm = get_oneshot_mods();
   bool cw = is_caps_word_on();
-  bool lock = (locked_layers & (1 << layer)) != 0;
-  bool lead = leader_active;
 #ifdef RGB_MATRIX_ENABLE
   bool rgb_on = rgb_user_enabled;
 #else
@@ -400,17 +421,16 @@ bool display_module_housekeeping_task_user(bool second_display) {
 #endif
 
   if (layer != last_layer || mods != last_mods || osm != last_osm ||
-      cw != last_cw || lock != last_lock || rgb_on != last_rgb ||
-      lead != last_lead) {
+      cw != last_cw || rgb_on != last_rgb) {
     // Clear entire surface
     qp_rect(lcd_surface, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, HSV_BLACK, true);
 
-    uint8_t h = (layer < 5) ? layer_display_hsv[layer][0] : 0;
-    uint8_t s = (layer < 5) ? layer_display_hsv[layer][1] : 255;
-    uint8_t v = (layer < 5) ? layer_display_hsv[layer][2] : 255;
+    uint8_t h = layer_display_hsv[layer][0];
+    uint8_t s = layer_display_hsv[layer][1];
+    uint8_t v = layer_display_hsv[layer][2];
 
     // Draw layer name — centered horizontally, at the top
-    const char *name = (layer < 5) ? layer_names[layer] : "???";
+    const char *name = layer_names[layer];
     int16_t tw = qp_textwidth(user_font, name);
     int16_t x = (LCD_WIDTH - tw) / 2;
     int16_t y = 8;
@@ -419,24 +439,6 @@ bool display_module_housekeeping_task_user(bool second_display) {
 
     // Stack indicators below layer name (only active ones take space)
     int16_t cur_y = y + user_font->line_height + 8;
-
-    // Leader key active indicator
-    if (lead) {
-      static const char *ldtxt = "LEAD";
-      int16_t ldw = qp_textwidth(user_font, ldtxt);
-      qp_drawtext_recolor(lcd_surface, (LCD_WIDTH - ldw) / 2, cur_y, user_font,
-                          ldtxt, HSV_WHITE, HSV_BLACK);
-      cur_y += user_font->line_height + 4;
-    }
-
-    // Layer lock indicator (shown in layer color)
-    if (lock) {
-      static const char *ltxt = "LOCK";
-      int16_t lw = qp_textwidth(user_font, ltxt);
-      qp_drawtext_recolor(lcd_surface, (LCD_WIDTH - lw) / 2, cur_y, user_font,
-                          ltxt, h, s, v, HSV_BLACK);
-      cur_y += user_font->line_height + 4;
-    }
 
     // Held modifiers
     char mod_buf[16];
@@ -477,9 +479,7 @@ bool display_module_housekeeping_task_user(bool second_display) {
     last_mods = mods;
     last_osm = osm;
     last_cw = cw;
-    last_lock = lock;
     last_rgb = rgb_on;
-    last_lead = lead;
   }
 
   // Flush surface to physical LCD
@@ -490,18 +490,6 @@ bool display_module_housekeeping_task_user(bool second_display) {
 
 #endif
 
-// ── Per-key tapping term ──
-
-uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
-  switch (keycode) {
-  case HM_A: case HM_S: case HM_D: case HM_F:
-  case HM_J: case HM_K: case HM_L: case HM_SCLN:
-    return 200;
-  default:
-    return TAPPING_TERM;
-  }
-}
-
 // ── Chordal hold: hand assignments ──
 
 #ifdef CHORDAL_HOLD
@@ -509,8 +497,7 @@ const char chordal_hold_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM =
     LAYOUT_elora_hlc('L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R',
                      'L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R',
                      'L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R',
-                     'L', 'L', 'L', 'L', 'L', 'L', '*', '*', '*', '*', 'R', 'R',
-                     'R', 'R', 'R', 'R', '*', '*', '*', '*', '*', '*', '*', '*',
-                     '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*',
-                     '*');
+                     'L', 'L', 'L', 'L', 'L', 'L', '*', 'L', 'R', '*', 'R', 'R', 'R', 'R', 'R', 'R',
+                     '*', '*', '*', '*', '*', '*', '*', '*', '*', '*',
+                     '*', '*', '*', '*', '*', '*', '*', '*', '*', '*');
 #endif
