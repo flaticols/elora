@@ -44,13 +44,16 @@ enum layers {
 
 enum custom_keycodes {
     AP_GLOB = SAFE_RANGE, // raw Globe (Fn) — emoji/dictation/manual chords
-    WM_FILL,              // Ctrl+Globe+F  — fill desktop
-    WM_CNTR,              // Ctrl+Globe+C  — center
-    WM_RTRN,              // Ctrl+Globe+R  — return to previous size
-    WM_LEFT,              // Ctrl+Globe+←  — left half
-    WM_RGHT,              // Ctrl+Globe+→  — right half
-    WM_TOP,               // Ctrl+Globe+↑  — top half
-    WM_BOTM,              // Ctrl+Globe+↓  — bottom half
+    WM_FILL,              // Ctrl+Globe+F  — fill desktop (native)
+    WM_CNTR,              // Ctrl+Globe+C  — center (native)
+    WM_RTRN,              // Ctrl+Globe+R  — return to previous size (native)
+    // Halves: emulated Globe can't drive Fn+Ctrl+arrow tiling, so these send
+    // Hyper+arrow — bind them to the Move & Resize menu items in
+    // System Settings > Keyboard > Keyboard Shortcuts > App Shortcuts.
+    WM_LEFT,              // Hyper+←  — left half
+    WM_RGHT,              // Hyper+→  — right half
+    WM_TOP,               // Hyper+↑  — top half
+    WM_BOTM,              // Hyper+↓  — bottom half
 };
 
 // ── State tracking ──
@@ -113,11 +116,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /* Layer 5 — Function + macOS window management
      * Right hand keeps F1-F24. Left hand (home-row mods dropped):
      *   F = Fill, R = Return, C = Center    (Ctrl+Globe+{F,R,C}) — work as-is
-     *   WASD arrow cross: W=↑ A=← S=↓ D=→   (Ctrl+Globe+arrow, halves)
+     *   WASD arrow cross: W=↑ A=← S=↓ D=→   (Hyper+arrow, halves)
      *   Globe = raw Fn on bottom-row outer pinky (emoji/dictation/manual)
-     *   NOTE: the arrow halves need the conflicting Mission Control
-     *   shortcuts (Ctrl+arrows) disabled in macOS System Settings,
-     *   otherwise macOS intercepts them (switch Space / App Exposé).
+     *   NOTE: the halves send Hyper+arrow (not Globe — macOS remaps
+     *   Globe+arrow to Home/End). Bind Hyper+arrow to the Move & Resize
+     *   menu items in System Settings > Keyboard Shortcuts > App Shortcuts.
      */
     [_FN] = LAYOUT_elora_hlc(
         KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
@@ -201,6 +204,19 @@ static void mac_globe_chord(uint16_t tapkey) {
   unregister_mods(MOD_BIT(KC_LCTL));
 }
 
+// ── Hyper chord for window halves ──
+// The emulated Globe can't drive Fn+Ctrl+arrow tiling (macOS remaps Globe+
+// arrow to Home/End first), so the halves send Hyper + arrow instead; bind
+// these in System Settings > Keyboard > Keyboard Shortcuts > App Shortcuts.
+
+static void hyper_chord(uint16_t tapkey) {
+  const uint8_t hyper = MOD_BIT(KC_LCTL) | MOD_BIT(KC_LALT) | MOD_BIT(KC_LGUI) |
+                        MOD_BIT(KC_LSFT);
+  register_mods(hyper);
+  tap_code16(tapkey);
+  unregister_mods(hyper);
+}
+
 // ── Process keycodes: Globe + window management, plus RGB toggle ──
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -213,10 +229,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   case WM_FILL: if (record->event.pressed) mac_globe_chord(KC_F);     return false;
   case WM_CNTR: if (record->event.pressed) mac_globe_chord(KC_C);     return false;
   case WM_RTRN: if (record->event.pressed) mac_globe_chord(KC_R);     return false;
-  case WM_LEFT: if (record->event.pressed) mac_globe_chord(KC_LEFT);  return false;
-  case WM_RGHT: if (record->event.pressed) mac_globe_chord(KC_RIGHT); return false;
-  case WM_TOP:  if (record->event.pressed) mac_globe_chord(KC_UP);    return false;
-  case WM_BOTM: if (record->event.pressed) mac_globe_chord(KC_DOWN);  return false;
+  case WM_LEFT: if (record->event.pressed) hyper_chord(KC_LEFT);  return false;
+  case WM_RGHT: if (record->event.pressed) hyper_chord(KC_RIGHT); return false;
+  case WM_TOP:  if (record->event.pressed) hyper_chord(KC_UP);    return false;
+  case WM_BOTM: if (record->event.pressed) hyper_chord(KC_DOWN);  return false;
 #ifdef RGB_MATRIX_ENABLE
   case RM_TOGG:
     if (record->event.pressed) {
