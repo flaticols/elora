@@ -6,199 +6,150 @@ Custom QMK firmware for a [splitkb Elora Rev2](https://splitkb.com/products/elor
 
 ## Features
 
-- **TFT display** (left half) — layer name, held modifiers, one-shot modifiers, LOCK, CAPS, RGB
-- **Per-key RGB** — optional, off by default, toggle with RM_TOGG; active keys glow in layer color
-- **Leader key** (both halves) for layer locking
-- **One-shot Hyper** (Cmd+Ctrl+Alt+Shift) for app shortcuts via Raycast/Kitty/Zed
-- **Home row mods** (CAGS: Ctrl-Alt-Gui-Shift) with Chordal Hold for misfire prevention
-- **5 layers**: Base, Navigation, Symbols, F-keys+Media, System
+- **TFT display** (left half) — active layer, held/one-shot modifiers, Caps Word, and RGB status
+- **Per-key RGB layer indicators** — implemented but off by default; no key currently exposes the toggle
+- **One-shot Hyper** (Cmd+Ctrl+Alt+Shift) for app shortcuts
+- **macOS window management** — native Control+Globe actions plus configurable Hyper+arrow shortcuts
+- **Three working layers above QWERTY**: Navigation, Symbols, and Function/window management
+- **Dvorak and Colemak definitions** — compiled as alternate base layers, but currently have no switch key
+- **Two soldered encoders** — volume on the left and page movement on the right; two extra encoder-map slots are reserved for optional Halcyon encoder modules
 - **Caps Word** support
 
-## Special Keys
+## Layer Access and Dual-Role Keys
 
 | Key | Location | Tap | Hold |
 |-----|----------|-----|------|
-| Space | Left thumb | Space | Nav layer |
-| Backspace | Right thumb | Backspace | Symbols layer |
-| Redo | Top-left | Cmd+Shift+Z | — |
-| Escape | Left home row | Escape | — |
-| - _ | Top-right | Minus/underscore | — |
-| ' " | Right home row | Quote | — |
-| OSM Shift | Bottom-left | One-shot Left Shift | — |
-| ` ~ | Bottom-right | Grave/tilde | — |
-| CapsWord | Left thumb (outer) | Toggle Caps Word | — |
-| OSL Sys | Left thumb | One-shot System layer | — |
-| Tab | Left thumb | Tab | — |
-| Hyper | Left thumb (inner) | One-shot Hyper | — |
-| Enter | Right thumb | Enter/Return | — |
-| Del | Right thumb | Forward delete | — |
-| OSL Sys | Right thumb | One-shot System layer | — |
-| Undo | Right thumb (outer) | Cmd+Z | — |
-| Leader | Left/Right inner | Start leader sequence | — |
-| OSL3 | Left inner | One-shot F-Keys layer | — |
+| Tab / Fn | Far-left Q row | Tab | Function layer 5 |
+| Esc / Ctrl | Far-left home row | Escape | Left Control |
+| Fn | Outer left thumb | — | Function layer 5 |
+| Hyper | Inner left thumb | One-shot Cmd+Ctrl+Alt+Shift | — |
+| Backspace / Symbols | Inner right thumb | Backspace | Symbols layer 4 |
+| Space / Navigation | Right thumb | Space | Navigation layer 3 |
+| Caps Word | Outer right thumb | Toggle Caps Word | — |
 
-### Home Row Mods (CAGS)
-
-| Key | Tap | Hold |
-|-----|-----|------|
-| A | a | Left Ctrl |
-| S | s | Left Alt |
-| D | d | Left Gui |
-| F | f | Left Shift |
-| J | j | Right Shift |
-| K | k | Right Gui |
-| L | l | Right Alt |
-| ; | ; | Right Ctrl |
-
-### Leader Key Sequences
-
-| Sequence | Action |
-|----------|--------|
-| Leader → Space | Toggle Nav layer lock |
-| Leader → Backspace | Toggle Symbols layer lock |
-| Leader → F | Toggle F-Keys layer lock |
-| Leader → Tab | Toggle System layer lock |
-
-Locked layers stay active until toggled off with the same sequence. The TFT display shows "LOCK" when a layer is locked.
+The tapping term is 175 ms. `HOLD_ON_OTHER_KEY_PRESS` makes the neutral-handed Tab/Fn, Space, and Backspace layer-tap keys choose their hold action as soon as another key is pressed. Thumb Fn is a plain momentary key that activates the Function layer immediately while held. Releasing either Function-layer access key always returns to the lower active layer.
 
 ### RGB Backlight
 
-Per-key backlight is **off by default**. Press `RM_TOGG` to toggle. When enabled:
-- Active keys glow in layer color (cyan=Nav, purple=Symbols, red=F-keys, green=System)
-- Base layer keeps all LEDs off
+Per-key backlight is **off by default**. The firmware handles `RM_TOGG`, but the current keymap does not assign that keycode, so RGB cannot be enabled from the keyboard without changing the mapping. When enabled:
+
+- Active non-transparent keys glow in the layer color (cyan=Nav, purple=Symbols, red-orange=Fn)
+- QWERTY, Dvorak, and Colemak keep all LEDs off
 - Underglow LEDs are always off (TFT display handles layer indication)
-- Display shows "RGB" when backlight is on
+- The display shows `RGB`
 
 ### TFT Display (Left Half)
 
 Shows from top to bottom:
-1. **Layer name** — current active layer (Base, Nav, Symbols, F-Keys, System)
-2. **LEAD** — shown while leader sequence is active
-3. **LOCK** — shown when the current layer is locked via Leader sequence
-4. **Held modifiers** — shows active modifiers (GUI, ALT, CTL, SFT, or HYPER when all four)
-5. **One-shot modifiers** — shows armed one-shot modifier state (e.g. after tapping Hyper)
-6. **CAPS** — shown when Caps Word is active
-7. **RGB** — shown when per-key backlight is enabled
+
+1. **Layer name** — QWERTY, Dvorak, Colemak, Nav, Symbols, F-Keys, Layer 6, or Layer 7
+2. **Held modifiers** — GUI, ALT, CTL, SFT, or HYPER when all four are active
+3. **One-shot modifiers** — for example, armed Hyper
+4. **CAPS** — while Caps Word is active
+5. **RGB** — while per-key backlight is enabled
 
 ## Layout
 
-### Layer 0 — Base (QWERTY)
+`·` means transparent (the key falls through to the next lower active layer, normally QWERTY); `×` means intentionally disabled.
+
+### Layer 0 — QWERTY
 
 ```
-┌─────┬─────┬─────┬─────┬─────┬─────┐                              ┌─────┬─────┬─────┬─────┬─────┬─────┐
-│  `  │  1  │  2  │  3  │  4  │  5  │                              │  6  │  7  │  8  │  9  │  0  │  =  │
-├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│Redo │  Q  │  W  │  E  │  R  │  T  │                              │  Y  │  U  │  I  │  O  │  P  │ - _ │
-├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│ Esc │A/Ctl│S/Alt│D/Gui│F/Sft│  G  │                              │  H  │J/Sft│K/Gui│L/Alt│;/Ctl│  '  │
-├─────┼─────┼─────┼─────┼─────┼─────┼─────┬─────┐  ┌─────┬─────┼─────┼─────┼─────┼─────┼─────┼─────┤
-│OSM⇧ │  Z  │  X  │  C  │  V  │  B  │Lead │OSL3 │  │OSL1 │Lead │  N  │  M  │  ,  │  .  │  /  │  ` ~│
-└─────┴─────┴─────┼─────┼─────┼─────┼─────┼─────┤  ├─────┼─────┼─────┼─────┼─────┼─────┴─────┴─────┘
-                  │CapsW│OSLSy│ Tab │Sp/Nv│Hyper│  │Bs/Sm│Enter│ Del │OSLSy│Undo │
-                  └─────┴─────┴─────┴─────┴─────┘  └─────┴─────┴─────┴─────┴─────┘
-┌─────┬─────┬─────┬─────┬─────┐                              ┌─────┬─────┬─────┬─────┬─────┐
-│LAlt │     │     │     │     │  MODULE ROW                   │OSL2 │     │     │     │     │
-└─────┴─────┴─────┴─────┴─────┘                              └─────┴─────┴─────┴─────┴─────┘
+LEFT HALF                                                                           RIGHT HALF
+┌───────┬───────┬───────┬───────┬───────┬───────┐                                   ┌───────┬───────┬───────┬───────┬───────┬───────┐
+│   `   │   1   │   2   │   3   │   4   │   5   │                                   │   6   │   7   │   8   │   9   │   0   │   =   │
+├───────┼───────┼───────┼───────┼───────┼───────┤                                   ├───────┼───────┼───────┼───────┼───────┼───────┤
+│ Tab/Fn│   Q   │   W   │   E   │   R   │   T   │                                   │   Y   │   U   │   I   │   O   │   P   │  Del  │
+├───────┼───────┼───────┼───────┼───────┼───────┤                                   ├───────┼───────┼───────┼───────┼───────┼───────┤
+│Esc/Ctl│   A   │   S   │   D   │   F   │   G   │                                   │   H   │   J   │   K   │   L   │   ;   │   '   │
+├───────┼───────┼───────┼───────┼───────┼───────┼───────┬───────┐   ┌───────┬───────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ LShift│   Z   │   X   │   C   │   V   │   B   │   [   │   -   │   │   _   │   ]   │   N   │   M   │   ,   │   .   │   /   │ RShift│
+└───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘   └───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
+                        ┌───────┬───────┬───────┬───────┬───────┐   ┌───────┬───────┬───────┬───────┬───────┐
+                        │  Fn   │ LAlt  │ Enter │ LGui  │ Hyper │   │Bs/Sym │Sp/Nav │ RGui  │ LCtrl │CapsWd │
+                        └───────┴───────┴───────┴───────┴───────┘   └───────┴───────┴───────┴───────┴───────┘
 ```
 
-| Area | Key | Tap | Hold |
-|------|-----|-----|------|
-| Top left | Redo | Cmd+Shift+Z | — |
-| Top right | - _ | Minus/underscore | — |
-| Home row L | Esc | Escape | — |
-| Home row R | ' | Quote | — |
-| Bottom-left | OSM⇧ | One-shot Left Shift | — |
-| Bottom-right | ` ~ | Grave/tilde | — |
-| Inner L | Lead | Start leader sequence | — |
-| Inner L | OSL3 | One-shot F-Keys layer (3) | — |
-| Inner R | OSL1 | One-shot Nav layer | — |
-| Inner R | Lead | Start leader sequence | — |
-| Thumb L | CapsW | Toggle Caps Word | — |
-| Thumb L | OSLSy | One-shot System layer (4) | — |
-| Thumb L | Tab | Tab | — |
-| Thumb L | Sp/Nv | Space | Nav layer (1) |
-| Thumb L | Hyper | One-shot Hyper (⌘⌃⌥⇧) | — |
-| Thumb R | Bs/Sm | Backspace | Symbols layer (2) |
-| Thumb R | Enter | Enter/Return | — |
-| Thumb R | Del | Forward delete | — |
-| Thumb R | OSLSy | One-shot System layer (4) | — |
-| Thumb R | Undo | Cmd+Z | — |
-| Module L | LAlt | Left Alt/Option | — |
-| Module R | OSL2 | One-shot Symbols layer | — |
-
-### Layer 1 — Navigation (hold Space)
+### Layer 3 — Navigation (hold Space)
 
 ```
-┌─────┬─────┬─────┬─────┬─────┬─────┐                              ┌─────┬─────┬─────┬─────┬─────┬─────┐
-│     │     │     │     │     │     │                              │     │     │     │     │     │     │
-├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │ ⌘`  │ ^←  │ ^→  │ ^↑  │ ^↓  │                              │Home │PgDn │PgUp │ End │ Ins │ Bsp │
-├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │     │     │     │     │     │                              │  ←  │  ↓  │  ↑  │  →  │     │     │
-├─────┼─────┼─────┼─────┼─────┼─────┼─────┬─────┐  ┌─────┬─────┼─────┼─────┼─────┼─────┼─────┼─────┤
-│     │ ⌘N  │ ⌘T  │ ⌘W  │ ⌘[  │ ⌘]  │     │     │  │     │     │ ⌥←  │ ⌥↓  │ ⌥↑  │ ⌥→  │     │     │
-└─────┴─────┴─────┼─────┼─────┼─────┼─────┼─────┤  ├─────┼─────┼─────┼─────┼─────┼─────┴─────┴─────┘
-                  │     │     │     │█████│     │  │     │     │     │     │     │
-                  └─────┴─────┴─────┴─────┴─────┘  └─────┴─────┴─────┴─────┴─────┘
+LEFT HALF                                                                           RIGHT HALF
+┌───────┬───────┬───────┬───────┬───────┬───────┐                                   ┌───────┬───────┬───────┬───────┬───────┬───────┐
+│   ·   │   ·   │   ·   │   ·   │   ·   │   ·   │                                   │   ·   │   ·   │   ·   │   ·   │   ·   │   ·   │
+├───────┼───────┼───────┼───────┼───────┼───────┤                                   ├───────┼───────┼───────┼───────┼───────┼───────┤
+│   ·   │   ·   │   ·   │   ·   │   ·   │   ·   │                                   │ Home  │PageDn │PageUp │  End  │ VolUp │  Del  │
+├───────┼───────┼───────┼───────┼───────┼───────┤                                   ├───────┼───────┼───────┼───────┼───────┼───────┤
+│   ·   │ OS Gui│ OS Alt│ OS Ctl│ OS Sft│   ·   │                                   │ Left  │ Down  │  Up   │ Right │ VolDn │  Ins  │
+├───────┼───────┼───────┼───────┼───────┼───────┼───────┬───────┐   ┌───────┬───────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│   ·   │   ·   │   ·   │   ·   │   ·   │   ·   │   ·   │Scroll │   │   ·   │   ·   │ Pause │ Prev  │ Play  │ Next  │ Mute  │ PrtSc │
+└───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘   └───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
+                        ┌───────┬───────┬───────┬───────┬───────┐   ┌───────┬───────┬───────┬───────┬───────┐
+                        │   ·   │   ·   │   ·   │   ·   │   ·   │   │   ·   │   ·   │   ·   │   ·   │   ·   │
+                        └───────┴───────┴───────┴───────┴───────┘   └───────┴───────┴───────┴───────┴───────┘
 ```
 
-Left: ⌘` app switch, ^←/→ Spaces, ^↑/↓ Mission Control. ⌘N/T/W new/tab/close, ⌘[/] back/forward.
+The one-shot modifiers sit under A/S/D/F. H/J/K/L are arrows; the remaining right-hand keys provide navigation, volume, media, and system controls.
 
-Right: HJKL arrows, Home/End/PgUp/PgDn. ⌥arrows = word/paragraph movement.
-
-### Layer 2 — Symbols (hold Backspace)
+### Layer 4 — Symbols (hold Backspace)
 
 ```
-┌─────┬─────┬─────┬─────┬─────┬─────┐                              ┌─────┬─────┬─────┬─────┬─────┬─────┐
-│     │     │     │     │     │     │                              │     │     │     │     │     │     │
-├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │  !  │  @  │  #  │  $  │  %  │                              │  ^  │  &  │  *  │  +  │  =  │ Bsp │
-├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │  `  │  <  │  {  │  [  │  (  │                              │  _  │  -  │  /  │  \  │  |  │  "  │
-├─────┼─────┼─────┼─────┼─────┼─────┼─────┬─────┐  ┌─────┬─────┼─────┼─────┼─────┼─────┼─────┼─────┤
-│     │  ~  │  >  │  }  │  ]  │  )  │     │     │  │     │     │  :  │  ;  │  ?  │     │     │     │
-└─────┴─────┴─────┼─────┼─────┼─────┼─────┼─────┤  ├─────┼─────┼─────┼─────┼─────┼─────┴─────┴─────┘
-                  │     │     │     │     │     │  │█████│     │     │     │     │
-                  └─────┴─────┴─────┴─────┴─────┘  └─────┴─────┴─────┴─────┴─────┘
+LEFT HALF                                                                           RIGHT HALF
+┌───────┬───────┬───────┬───────┬───────┬───────┐                                   ┌───────┬───────┬───────┬───────┬───────┬───────┐
+│   ·   │   ·   │   ·   │   ·   │   ·   │   ·   │                                   │   ·   │   ·   │   ·   │   ·   │   ·   │   ·   │
+├───────┼───────┼───────┼───────┼───────┼───────┤                                   ├───────┼───────┼───────┼───────┼───────┼───────┤
+│   `   │   1   │   2   │   3   │   4   │   5   │                                   │   6   │   7   │   8   │   9   │   0   │   =   │
+├───────┼───────┼───────┼───────┼───────┼───────┤                                   ├───────┼───────┼───────┼───────┼───────┼───────┤
+│   ~   │   !   │   @   │   #   │   $   │   %   │                                   │   ^   │   &   │   *   │   (   │   )   │   +   │
+├───────┼───────┼───────┼───────┼───────┼───────┼───────┬───────┐   ┌───────┬───────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│   |   │   \   │   :   │   ;   │   -   │   [   │   {   │   ·   │   │   ·   │   }   │   ]   │   _   │   ,   │   .   │   /   │   ?   │
+└───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘   └───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
+                        ┌───────┬───────┬───────┬───────┬───────┐   ┌───────┬───────┬───────┬───────┬───────┐
+                        │   ·   │   ·   │   ·   │   ·   │   ·   │   │   ·   │   ·   │   ·   │   ·   │   ·   │
+                        └───────┴───────┴───────┴───────┴───────┘   └───────┴───────┴───────┴───────┴───────┘
 ```
 
-Left hand = brackets (open on home row, close below). Right hand = operators. No shift needed for any symbol.
+This mirrors the number row and its shifted symbols, with punctuation and brackets on the bottom row.
 
-### Layer 3 — F-Keys + Media (OSL3)
-
-```
-┌─────┬─────┬─────┬─────┬─────┬─────┐                              ┌─────┬─────┬─────┬─────┬─────┬─────┐
-│ F11 │ F1  │ F2  │ F3  │ F4  │ F5  │                              │ F6  │ F7  │ F8  │ F9  │ F10 │ F12 │
-├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │     │ Bri↑│ Bri↓│     │     │                              │     │     │     │     │     │     │
-├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │     │  ⏭  │  ⏯  │  ⏮  │     │                              │     │ Vol↓│ Vol↑│Mute │ RGB │     │
-├─────┼─────┼─────┼─────┼─────┼─────┼─────┬─────┐  ┌─────┬─────┼─────┼─────┼─────┼─────┼─────┼─────┤
-│     │     │     │     │     │     │     │█████│  │     │     │     │     │     │     │     │     │
-└─────┴─────┴─────┼─────┼─────┼─────┼─────┼─────┤  ├─────┼─────┼─────┼─────┼─────┼─────┴─────┴─────┘
-                  │     │     │     │     │     │  │     │     │     │     │     │
-                  └─────┴─────┴─────┴─────┴─────┘  └─────┴─────┴─────┴─────┴─────┘
-```
-
-RGB = `RM_TOGG` (toggle per-key backlight on/off). F-keys row mirrors number row positions.
-
-### Layer 4 — System (OSL Sys)
+### Layer 5 — Function and macOS Window Management
 
 ```
-┌─────┬─────┬─────┬─────┬─────┬─────┐                              ┌─────┬─────┬─────┬─────┬─────┬─────┐
-│     │     │     │     │     │     │                              │     │     │     │     │     │     │
-├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │     │     │ ⌘⇧3 │ ⌘⇧4 │ ⌘⇧5 │                              │     │     │     │     │     │     │
-├─────┼─────┼─────┼─────┼─────┼─────┤                              ├─────┼─────┼─────┼─────┼─────┼─────┤
-│     │     │     │     │     │     │                              │ ^←  │ ^↓  │ ^↑  │ ^→  │     │     │
-├─────┼─────┼─────┼─────┼─────┼─────┼─────┬─────┐  ┌─────┬─────┼─────┼─────┼─────┼─────┼─────┼─────┤
-│     │     │     │     │     │     │     │     │  │     │     │ ⌘H  │ ⌘M  │ ⌘Q  │     │     │     │
-└─────┴─────┴─────┼─────┼─────┼─────┼─────┼─────┤  ├─────┼─────┼─────┼─────┼─────┼─────┴─────┴─────┘
-                  │     │     │█████│     │     │  │     │     │     │     │     │
-                  └─────┴─────┴─────┴─────┴─────┘  └─────┴─────┴─────┴─────┴─────┘
+LEFT HALF                                                                           RIGHT HALF
+┌───────┬───────┬───────┬───────┬───────┬───────┐                                   ┌───────┬───────┬───────┬───────┬───────┬───────┐
+│   ×   │   ×   │   ×   │   ×   │   ×   │   ×   │                                   │   ×   │   ×   │   ×   │   ×   │   ×   │   ×   │
+├───────┼───────┼───────┼───────┼───────┼───────┤                                   ├───────┼───────┼───────┼───────┼───────┼───────┤
+│   ·   │   ×   │  Top  │   ×   │ Return│   ×   │                                   │  F1   │  F2   │  F3   │  F4   │   ×   │   ×   │
+├───────┼───────┼───────┼───────┼───────┼───────┤                                   ├───────┼───────┼───────┼───────┼───────┼───────┤
+│   ×   │ Left  │ Bottom│ Right │ Fill  │   ×   │                                   │  F5   │  F6   │  F7   │  F8   │   ×   │   ×   │
+├───────┼───────┼───────┼───────┼───────┼───────┼───────┬───────┐   ┌───────┬───────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ Globe │   ×   │   ×   │ Center│   ×   │   ×   │   ×   │   ×   │   │   ×   │   ×   │  F9   │  F10  │  F11  │  F12  │   ×   │   ×   │
+└───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘   └───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
+                        ┌───────┬───────┬───────┬───────┬───────┐   ┌───────┬───────┬───────┬───────┬───────┐
+                        │   ·   │   ×   │   ×   │   ×   │ Caps  │   │  F24  │   ×   │   ×   │   ×   │   ×   │
+                        └───────┴───────┴───────┴───────┴───────┘   └───────┴───────┴───────┴───────┴───────┘
 ```
 
-Screenshots: ⌘⇧3 full screen, ⌘⇧4 area select, ⌘⇧5 screenshot panel. Spaces: ^← /→ switch, ^↓/↑ Mission Control/App Expose. Window: ⌘H hide, ⌘M minimize, ⌘Q quit.
+Window actions:
+
+- **Fill**, **Center**, and **Return** send native macOS Control+Globe+F/C/R chords.
+- **Left**, **Right**, **Top**, and **Bottom** send Hyper+arrow. Bind those four chords to the matching **Move & Resize** commands in System Settings → Keyboard → Keyboard Shortcuts → App Shortcuts.
+- **Globe** is a raw held Globe/Fn key for emoji, dictation, or manual chords.
+- F1–F12 form a 3×4 block on the right hand; Caps Lock and F24 are on the thumb row.
+
+### Alternate and Reserved Layers
+
+- **Layer 1 — Dvorak** and **Layer 2 — Colemak** are complete alternate bases, but no `DF()`/`PDF()` key currently selects them.
+- **Layers 6 and 7** are reserved and transparent.
+
+### Encoders
+
+| Encoder-map slot | Present in this build | Counter-clockwise | Clockwise |
+|------------------|-----------------------|-------------------|-----------|
+| Left soldered | Yes | Volume down | Volume up |
+| Left Halcyon module | No (TFT installed) | Volume down | Volume up |
+| Right soldered | Yes | Page up | Page down |
+| Right Halcyon module | No module installed | Page up | Page down |
+
+The four-slot encoder map is the same on layers 0–6. Layer 7 is transparent.
 
 ## Build
 

@@ -7,7 +7,7 @@
  *   2 Colemak  — alternate base (defined; bind a DF() key to reach it)
  *   3 Nav      — arrows / nav / media (LT3 on Space)
  *   4 Sym      — numbers + symbols (LT4 on Backspace)
- *   5 Function — F-keys + mods (LT5/TT5 on Tab)
+ *   5 Function — F-keys + mods (LT5 on Tab, MO5 on thumb Fn)
  *   6 / 7      — reserved (transparent)
  *
  * Hardware features kept from the previous build:
@@ -68,48 +68,43 @@ static bool rgb_user_enabled = false; // RGB backlight off by default
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-    [_QWERTY] = LAYOUT_elora_hlc(
+    [_QWERTY] = LAYOUT(
         KC_GRV, KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9, KC_0, KC_EQL,
-        LT(5, KC_TAB), KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_DEL,
+        LT(_FN, KC_TAB), KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_DEL,
         LCTL_T(KC_ESC), KC_A, KC_S, KC_D, KC_F, KC_G, KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
         KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B, KC_LBRC, KC_MINS, LSFT(KC_MINS), KC_RBRC, KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT,
-        TT(5), KC_LALT, KC_ENT, KC_LGUI, OSM(MOD_HYPR), LT(4, KC_BSPC), LT(3, KC_SPC), KC_RGUI, KC_LCTL, QK_CAPS_WORD_TOGGLE,
-        KC_MUTE, KC_NO, KC_NO, KC_NO, KC_NO, KC_MUTE, KC_NO, KC_NO, KC_NO, KC_NO
+        MO(_FN), KC_LALT, KC_ENT, KC_LGUI, OSM(MOD_HYPR), LT(4, KC_BSPC), LT(3, KC_SPC), KC_RGUI, KC_LCTL, QK_CAPS_WORD_TOGGLE
     ),
 
-    [_DVORAK] = LAYOUT_elora_hlc(
+    [_DVORAK] = LAYOUT(
         KC_ESC, KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9, KC_0, KC_ESC,
         KC_TAB, KC_QUOT, KC_COMM, KC_DOT, KC_P, KC_Y, KC_F, KC_G, KC_C, KC_R, KC_L, KC_BSPC,
         LCTL_T(KC_ESC), KC_A, KC_O, KC_E, KC_U, KC_I, KC_D, KC_H, KC_T, KC_N, KC_S, RCTL_T(KC_MINS),
         KC_LSFT, KC_SCLN, KC_Q, KC_J, KC_K, KC_X, KC_LBRC, KC_CAPS, MO(5), KC_RBRC, KC_B, KC_M, KC_W, KC_V, KC_Z, KC_RSFT,
-        MO(6), KC_LGUI, LALT_T(KC_ENT), KC_SPC, MO(3), MO(4), KC_SPC, KC_RALT, KC_RGUI, KC_APP,
-        KC_MUTE, KC_NO, KC_NO, KC_NO, KC_NO, KC_MUTE, KC_NO, KC_NO, KC_NO, KC_NO
+        MO(6), KC_LGUI, LALT_T(KC_ENT), KC_SPC, MO(3), MO(4), KC_SPC, KC_RALT, KC_RGUI, KC_APP
     ),
 
-    [_COLEMAK] = LAYOUT_elora_hlc(
+    [_COLEMAK] = LAYOUT(
         KC_ESC, KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9, KC_0, KC_ESC,
         KC_TAB, KC_Q, KC_W, KC_F, KC_P, KC_B, KC_J, KC_L, KC_U, KC_Y, KC_SCLN, KC_BSPC,
         LCTL_T(KC_ESC), KC_A, KC_R, KC_S, KC_T, KC_G, KC_M, KC_N, KC_E, KC_I, KC_O, RCTL_T(KC_QUOT),
         KC_LSFT, KC_Z, KC_X, KC_C, KC_D, KC_V, KC_LBRC, KC_CAPS, MO(5), KC_RBRC, KC_K, KC_H, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT,
-        MO(6), KC_LGUI, LALT_T(KC_ENT), KC_SPC, MO(3), MO(4), KC_SPC, KC_RALT, KC_RGUI, KC_APP,
-        KC_MUTE, KC_NO, KC_NO, KC_NO, KC_NO, KC_MUTE, KC_NO, KC_NO, KC_NO, KC_NO
+        MO(6), KC_LGUI, LALT_T(KC_ENT), KC_SPC, MO(3), MO(4), KC_SPC, KC_RALT, KC_RGUI, KC_APP
     ),
 
-    [_NAV] = LAYOUT_elora_hlc(
+    [_NAV] = LAYOUT(
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_HOME, KC_PGDN, KC_PGUP, KC_END, KC_VOLU, KC_DEL,
         KC_TRNS, OSM(MOD_LGUI), OSM(MOD_LALT), OSM(MOD_LCTL), OSM(MOD_LSFT), KC_TRNS, KC_LEFT, KC_DOWN, KC_UP, KC_RIGHT, KC_VOLD, KC_INS,
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_SCRL, KC_TRNS, KC_TRNS, KC_PAUS, KC_MPRV, KC_MPLY, KC_MNXT, KC_MUTE, KC_PSCR,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS
     ),
 
-    [_SYM] = LAYOUT_elora_hlc(
+    [_SYM] = LAYOUT(
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
         KC_GRV, KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9, KC_0, KC_EQL,
         LSFT(KC_GRV), LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5), LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), LSFT(KC_EQL),
         LSFT(KC_BSLS), KC_BSLS, LSFT(KC_SCLN), KC_SCLN, KC_MINS, KC_LBRC, LSFT(KC_LBRC), KC_TRNS, KC_TRNS, LSFT(KC_RBRC), KC_RBRC, LSFT(KC_MINS), KC_COMM, KC_DOT, KC_SLSH, LSFT(KC_SLSH),
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS
     ),
 
@@ -122,30 +117,27 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *   Globe+arrow to Home/End). Bind Hyper+arrow to the Move & Resize
      *   menu items in System Settings > Keyboard Shortcuts > App Shortcuts.
      */
-    [_FN] = LAYOUT_elora_hlc(
+    [_FN] = LAYOUT(
         KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
-        KC_NO, KC_NO, WM_TOP, KC_NO, WM_RTRN, KC_NO, KC_F1, KC_F2, KC_F3, KC_F4, KC_NO, KC_NO,
+        KC_TRNS, KC_NO, WM_TOP, KC_NO, WM_RTRN, KC_NO, KC_F1, KC_F2, KC_F3, KC_F4, KC_NO, KC_NO,
         KC_NO, WM_LEFT, WM_BOTM, WM_RGHT, WM_FILL, KC_NO, KC_F5, KC_F6, KC_F7, KC_F8, KC_NO, KC_NO,
         AP_GLOB, KC_NO, KC_NO, WM_CNTR, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_F9, KC_F10, KC_F11, KC_F12, KC_NO, KC_NO,
-        KC_NO, KC_NO, KC_NO, KC_NO, KC_CAPS, KC_F24, KC_NO, KC_NO, KC_NO, KC_NO,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS
+        KC_TRNS, KC_NO, KC_NO, KC_NO, KC_CAPS, KC_F24, KC_NO, KC_NO, KC_NO, KC_NO
     ),
 
-    [_L6] = LAYOUT_elora_hlc(
+    [_L6] = LAYOUT(
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS
     ),
 
-    [_L7] = LAYOUT_elora_hlc(
+    [_L7] = LAYOUT(
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS
     ),
 };
@@ -513,10 +505,9 @@ bool display_module_housekeeping_task_user(bool second_display) {
 
 #ifdef CHORDAL_HOLD
 const char chordal_hold_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM =
-    LAYOUT_elora_hlc('L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R',
-                     'L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R',
-                     'L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R',
-                     'L', 'L', 'L', 'L', 'L', 'L', '*', 'L', 'R', '*', 'R', 'R', 'R', 'R', 'R', 'R',
-                     '*', '*', '*', '*', '*', '*', '*', '*', '*', '*',
-                     '*', '*', '*', '*', '*', '*', '*', '*', '*', '*');
+    LAYOUT('L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R',
+           '*', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R',
+           'L', 'L', 'L', 'L', 'L', 'L', 'R', 'R', 'R', 'R', 'R', 'R',
+           'L', 'L', 'L', 'L', 'L', 'L', '*', 'L', 'R', '*', 'R', 'R', 'R', 'R', 'R', 'R',
+           '*', '*', '*', '*', '*', '*', '*', '*', '*', '*');
 #endif

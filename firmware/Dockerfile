@@ -12,6 +12,6 @@ COPY keyboards/splitkb/halcyon/elora/keymaps/denis/ \
      keyboards/splitkb/halcyon/elora/keymaps/denis/
 
 # Module flag passed at runtime via build.sh:
-#   -e HLC_TFT_DISPLAY=1      (left half — TFT display)
-#   -e HLC_CIRQUE_TRACKPAD=1   (right half — Cirque trackpad)
+#   -e HLC_TFT_DISPLAY=1  (left half — TFT display)
+#   -e HLC_NONE=1         (right half — no module)
 CMD ["qmk", "compile", "-kb", "splitkb/halcyon/elora/rev2", "-km", "denis"]

@@ -1,6 +1,7 @@
 .DS_Store
 .claude/
 firmware/output/
+__pycache__/
 firmware/.DS_Store
 CLAUDE.md
 docs/plans/

@@ -9,6 +9,7 @@ ENCODER_MAP_ENABLE = yes
 # tiling — share the USB endpoint so consumer + keyboard reports coexist.
 KEYBOARD_SHARED_EP = yes
 
-# Halcyon module support (defines LAYOUT_elora_hlc)
-# Build left half:  -e HLC_TFT_DISPLAY=1     (TFT display module)
+# Halcyon module selection is supplied per half at compile time:
+#   left:  -e HLC_TFT_DISPLAY=1
+#   right: -e HLC_NONE=1
 USER_NAME := halcyon_modules

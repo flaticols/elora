@@ -18,8 +18,8 @@ docker run --rm -v "$(pwd)/output:/output" elora-firmware \
         cp "$UF2" /output/elora_left_display.uf2 &&
         rm "$UF2" &&
 
-        echo "--- RIGHT half ---" &&
-        qmk compile -kb splitkb/halcyon/elora/rev2 -km denis &&
+        echo "--- RIGHT half (no Halcyon module) ---" &&
+        qmk compile -kb splitkb/halcyon/elora/rev2 -km denis -e HLC_NONE=1 &&
         UF2=$(find / -name "*.uf2" -not -path "/proc/*" -not -path "/sys/*" -not -path "/output/*" 2>/dev/null | head -1) &&
         echo "Found: $UF2" &&
         cp "$UF2" /output/elora_right.uf2

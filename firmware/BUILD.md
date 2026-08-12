@@ -1,91 +1,88 @@
-# Building Custom Firmware for Elora Rev2 (Halcyon)
+# Building Custom Firmware for Elora Rev2
 
-## What this gives you
+This keymap targets an Elora Rev2 with a TFT Halcyon module on the left half and no Halcyon module on the right half.
 
-- **Fixed home row mods**: No more ghost Cmd+S. Chordal hold ensures same-hand combos (A+S) are always taps.
-- **TFT display layer indicator** (left half): Shows current layer name, Hyper status, Caps Word status — replaces underglow
-- **Cirque trackpad** (right half): 35mm trackpad with tap-to-click, scroll gestures, cursor glide, auto-mouse layer
-- **Per-key RGB**: Active keys lit in layer color (cyan/nav, purple/symbols, red/F-keys, green/mouse, yellow/system)
-- **Per-key tapping term**: Home row mods at 190ms, thumb keys at 175ms
-- **Tuned mouse keys**: 3-speed momentary acceleration (software fallback)
+## Included Features
 
-## Prerequisites
+- Tab/Fn and thumb Fn provide momentary access to the Function layer without a latch state.
+- Chordal Hold keeps same-hand home-row combinations as taps while allowing neutral layer keys to settle as holds immediately.
+- The left TFT shows the active layer, modifiers, Caps Word, and RGB status.
+- Per-key RGB is implemented but starts off; the current mapping does not expose its toggle.
+- The two soldered encoders control volume on the left and page movement on the right.
+- macOS window actions use native Control+Globe chords or configurable Hyper+arrow shortcuts.
+
+## Docker Build
+
+From the repository root:
 
 ```bash
-# Install QMK CLI
-python3 -m pip install qmk
-qmk setup  # follow prompts
+cd firmware
+./build.sh
 ```
 
-## Option A: Using splitkb Userspace (recommended)
+This creates:
+
+- `output/elora_left_display.uf2` — left half with `HLC_TFT_DISPLAY=1`
+- `output/elora_right.uf2` — right half with `HLC_NONE=1`
+
+## Manual QMK Build
+
+Install the QMK CLI, clone the Halcyon branch of splitkb's userspace, and configure it as the overlay:
 
 ```bash
-# 1. Fork and clone
-git clone https://github.com/splitkb/qmk_userspace.git
+python3 -m pip install qmk
+git clone --depth 1 --branch halcyon https://github.com/splitkb/qmk_userspace.git
 cd qmk_userspace
-git checkout halcyon  # Halcyon firmware branch
+qmk config user.overlay_dir="$(pwd)"
+qmk setup -y
+```
 
-# 2. Set userspace path
-qmk config user.overlay_dir="$(realpath .)"
+Copy this repository's `denis` directory to:
 
-# 3. Copy your custom keymap
-cp -r /path/to/elora/firmware/keyboards/splitkb/halcyon/elora/keymaps/denis \
-      keyboards/splitkb/halcyon/elora/keymaps/denis
+```text
+keyboards/splitkb/halcyon/elora/keymaps/denis
+```
 
-# 4. Compile — two separate builds, one per half
-# Left half (TFT display):
+Compile each half with an explicit module selection:
+
+```bash
+# Left half — TFT display
 qmk compile -kb splitkb/halcyon/elora/rev2 -km denis -e HLC_TFT_DISPLAY=1
 
-# Right half (Cirque trackpad):
-qmk compile -kb splitkb/halcyon/elora/rev2 -km denis -e HLC_CIRQUE_TRACKPAD=1
-
-# The .uf2 firmware files will be in the qmk_firmware build dir
-# Rename them so you know which is which before flashing!
+# Right half — no Halcyon module
+qmk compile -kb splitkb/halcyon/elora/rev2 -km denis -e HLC_NONE=1
 ```
 
-## Option B: Using GitHub Actions (no local toolchain needed)
-
-1. Fork `splitkb/qmk_userspace` on GitHub
-2. Switch to `halcyon` branch
-3. Copy the `denis` keymap folder to `keyboards/splitkb/halcyon/elora/keymaps/`
-4. Commit and push
-5. Go to Actions tab → enable workflows → run build
-6. Download firmware from Releases
+Rename the two generated files before flashing so they cannot be confused.
 
 ## Flashing
 
-Each half gets its own firmware — do NOT flash the same .uf2 to both sides.
+Do not flash the same artifact to both halves.
 
-1. **Left half (TFT display):**
-   - Double-tap the reset button on the left controller
-   - Drag `elora_left_display.uf2` onto the `RPI-RP2` drive
-2. **Right half (Cirque trackpad):**
-   - Double-tap the reset button on the right controller
-   - Drag `elora_right_trackpad.uf2` onto the `RPI-RP2` drive
-3. Connect USB to the **left** half (it becomes the master)
-4. Load your `elora-optimized.vil` in Vial
+1. On the left half, enter the RP2040 bootloader and copy `elora_left_display.uf2` to the `RPI-RP2` drive.
+2. On the right half, enter the bootloader and copy `elora_right.uf2` to the `RPI-RP2` drive.
+3. Connect USB to the left half so the TFT half is the master.
+
+## Post-Flash Checks
+
+1. Tap Tab/Fn and confirm it sends one Tab.
+2. Press Tab/Fn and W together and confirm the Function-layer Top action runs.
+3. Hold thumb Fn and confirm F-keys and window actions work only while it is held.
+4. Tap thumb Fn repeatedly and confirm the Function layer never latches.
 
 ## Troubleshooting
 
-### CHORDAL_HOLD not recognized
-If QMK version is too old for CHORDAL_HOLD, remove it from config.h
-and the layout array from keymap.c. Fall back to just PERMISSIVE_HOLD.
+### A module-selection error appears
 
-### RGB not changing per layer
-Check that `RGB_MATRIX_ENABLE = yes` in rules.mk and that the Halcyon
-Elora has RGB Matrix (not rgblight). If it uses rgblight, replace
-`rgb_matrix_*` calls with `rgblight_sethsv_noeeprom()` in keymap.c.
+Both builds require an explicit module flag. Use `HLC_TFT_DISPLAY=1` for the left half and `HLC_NONE=1` for the right half.
 
-### LAYOUT macro mismatch in chordal_hold_layout
-The LAYOUT macro must match the Elora Rev2 matrix. If compilation fails
-on the chordal_hold_layout, check the matrix dimensions in
-`keyboards/splitkb/halcyon/elora/elora.h` and adjust accordingly.
+### The layout macro fails to compile
+
+The current Halcyon userspace uses the 62-switch `LAYOUT` macro. `LAYOUT_elora_hlc` belongs to the legacy compatibility keymap and must not be used here.
 
 ## Sources
 
 - [splitkb Compiling Firmware Guide](https://docs.splitkb.com/product-guides/halcyon-series/advanced/compiling-firmware)
-- [splitkb QMK Userspace Repo](https://github.com/splitkb/qmk_userspace)
-- [QMK Tap-Hold Config](https://docs.qmk.fm/tap_hold)
+- [splitkb QMK Userspace](https://github.com/splitkb/qmk_userspace)
+- [QMK Tap-Hold](https://docs.qmk.fm/tap_hold)
 - [QMK Chordal Hold](https://docs.qmk.fm/tap_hold#chordal-hold)
-- [QMK RGB Matrix](https://docs.qmk.fm/features/rgb_matrix)
-- [Home Row Mods Guide](https://precondition.github.io/home-row-mods)
