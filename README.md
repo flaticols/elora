@@ -36,8 +36,8 @@ The tapping term is 175 ms with a 120 ms quick-tap. Tab/Fn, Space and Backspace 
 their hold as soon as another key is pressed. Esc/Ctrl only becomes Ctrl together with
 a right-hand key, a thumb key, Tab/Fn, `[` or `]`, so a quick same-hand roll stays Esc.
 
-The Hyper thumb is balanced: tapped, or rolled into the next key, it arms Hyper for one
-key (3 s); held while another key is tapped, it holds Ctrl+Alt. One-shot modifiers on
+The Hyper thumb is hold-preferred: any key pressed while it is down gets Ctrl+Alt, and
+only a clean tap arms Hyper for the next key (3 s). One-shot modifiers on
 the Nav layer also release after 3 s.
 
 ## Layout

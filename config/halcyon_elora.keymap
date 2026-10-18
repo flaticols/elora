@@ -61,12 +61,14 @@
 
         /*
          * Tap: one-shot Hyper for app shortcuts. Hold: Ctrl+Alt for AeroSpace.
-         * Balanced so a tap rolled into the next key still arms Hyper.
+         * Hold-preferred so any key pressed while the thumb is down gets
+         * Ctrl+Alt. Balanced resolved a fast thumb+key chord as a tap, sending
+         * Hyper+key instead; Hyper now needs a clean tap before the next key.
          */
         hyp_wm: hyp_wm {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
-            flavor = "balanced";
+            flavor = "hold-preferred";
             tapping-term-ms = <175>;
             bindings = <&kp>, <&sk>;
         };
