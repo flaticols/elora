@@ -1,56 +1,48 @@
-# Elora Rev2 — Custom QMK Firmware
+# Halcyon Elora — ZMK Firmware
 
 [![Latest Release](https://img.shields.io/github/v/release/flaticols/elora)](https://github.com/flaticols/elora/releases/latest)
 
-Custom QMK firmware for a [splitkb Elora Rev2](https://splitkb.com/products/elora) (Halcyon series) split keyboard with RP2040 controller. Left half has a TFT display module. Optimized for macOS with Helix/Zed editors.
+ZMK config for a [splitkb Halcyon Elora](https://splitkb.com/products/halcyon-elora) rev2
+with Halcyon wireless controllers, coin-cell batteries and the Halcyon dongle. Built on
+[splitkb/zmk-halcyon-config](https://github.com/splitkb/zmk-halcyon-config). Optimized
+for macOS with Helix/Zed and the [AeroSpace](https://github.com/nikitabobko/AeroSpace)
+window manager.
 
-## Features
+The QMK firmware for the wired RP2040 controller is in the history before the switch to ZMK.
 
-- **TFT display** (left half) — active layer, held/one-shot modifiers, Caps Word, and RGB status
-- **Per-key RGB layer indicators** — implemented but off by default; no key currently exposes the toggle
-- **One-shot Hyper** (Cmd+Ctrl+Alt+Shift) for app shortcuts
-- **macOS window management** — native Control+Globe actions plus configurable Hyper+arrow shortcuts
-- **Three working layers above QWERTY**: Navigation, Symbols, and Function/window management
-- **Dvorak and Colemak definitions** — compiled as alternate base layers, but currently have no switch key
-- **Two soldered encoders** — volume on the left and page movement on the right; two extra encoder-map slots are reserved for optional Halcyon encoder modules
-- **Caps Word** support
+## Hardware
+
+| Part | Firmware | Role |
+|------|----------|------|
+| Dongle | `elora_dongle.uf2` | Central — USB to the Mac, holds the keymap, runs ZMK Studio |
+| Left half | `elora_left.uf2` | Peripheral, coin cell |
+| Right half | `elora_right.uf2` | Peripheral, coin cell |
+
+No Halcyon modules or soldered encoders are fitted.
 
 ## Layer Access and Dual-Role Keys
 
 | Key | Location | Tap | Hold |
 |-----|----------|-----|------|
-| Tab / Fn | Far-left Q row | Tab | Function layer 5 |
+| Tab / Fn | Far-left Q row | Tab | Fn layer |
 | Esc / Ctrl | Far-left home row | Escape | Left Control |
-| Fn | Outer left thumb | — | Function layer 5 |
-| Hyper | Inner left thumb | One-shot Cmd+Ctrl+Alt+Shift | — |
-| Backspace / Symbols | Inner right thumb | Backspace | Symbols layer 4 |
-| Space / Navigation | Right thumb | Space | Navigation layer 3 |
+| Fn | Outer left thumb | — | Fn layer |
+| Hyper / WM | Inner left thumb | One-shot Cmd+Ctrl+Alt+Shift | Ctrl+Alt (AeroSpace) |
+| Backspace / Symbols | Inner right thumb | Backspace | Symbols layer |
+| Space / Nav | Right thumb | Space | Nav layer |
 | Caps Word | Outer right thumb | Toggle Caps Word | — |
 
-The tapping term is 175 ms. `HOLD_ON_OTHER_KEY_PRESS` makes the neutral-handed Tab/Fn, Space, and Backspace layer-tap keys choose their hold action as soon as another key is pressed. Thumb Fn is a plain momentary key that activates the Function layer immediately while held. Releasing either Function-layer access key always returns to the lower active layer.
+The tapping term is 175 ms with a 120 ms quick-tap. Tab/Fn, Space and Backspace take
+their hold as soon as another key is pressed. Esc/Ctrl only becomes Ctrl together with
+a right-hand key, a thumb key, Tab/Fn, `[` or `]`, so a quick same-hand roll stays Esc.
 
-### RGB Backlight
-
-Per-key backlight is **off by default**. The firmware handles `RM_TOGG`, but the current keymap does not assign that keycode, so RGB cannot be enabled from the keyboard without changing the mapping. When enabled:
-
-- Active non-transparent keys glow in the layer color (cyan=Nav, purple=Symbols, red-orange=Fn)
-- QWERTY, Dvorak, and Colemak keep all LEDs off
-- Underglow LEDs are always off (TFT display handles layer indication)
-- The display shows `RGB`
-
-### TFT Display (Left Half)
-
-Shows from top to bottom:
-
-1. **Layer name** — QWERTY, Dvorak, Colemak, Nav, Symbols, F-Keys, Layer 6, or Layer 7
-2. **Held modifiers** — GUI, ALT, CTL, SFT, or HYPER when all four are active
-3. **One-shot modifiers** — for example, armed Hyper
-4. **CAPS** — while Caps Word is active
-5. **RGB** — while per-key backlight is enabled
+The Hyper thumb is balanced: tapped, or rolled into the next key, it arms Hyper for one
+key (3 s); held while another key is tapped, it holds Ctrl+Alt. One-shot modifiers on
+the Nav layer also release after 3 s.
 
 ## Layout
 
-`·` means transparent (the key falls through to the next lower active layer, normally QWERTY); `×` means intentionally disabled.
+`·` means transparent (falls through to QWERTY); `×` means disabled.
 
 ### Layer 0 — QWERTY
 
@@ -66,11 +58,11 @@ LEFT HALF                                                                       
 │ LShift│   Z   │   X   │   C   │   V   │   B   │   [   │   -   │   │   _   │   ]   │   N   │   M   │   ,   │   .   │   /   │ RShift│
 └───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘   └───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
                         ┌───────┬───────┬───────┬───────┬───────┐   ┌───────┬───────┬───────┬───────┬───────┐
-                        │  Fn   │ LAlt  │ Enter │ LGui  │ Hyper │   │Bs/Sym │Sp/Nav │ RGui  │ LCtrl │CapsWd │
+                        │  Fn   │ LAlt  │ Enter │ LGui  │Hyp/WM │   │Bs/Sym │Sp/Nav │ RGui  │ LCtrl │CapsWd │
                         └───────┴───────┴───────┴───────┴───────┘   └───────┴───────┴───────┴───────┴───────┘
 ```
 
-### Layer 3 — Navigation (hold Space)
+### Layer 1 — Nav (hold Space)
 
 ```
 LEFT HALF                                                                           RIGHT HALF
@@ -88,9 +80,7 @@ LEFT HALF                                                                       
                         └───────┴───────┴───────┴───────┴───────┘   └───────┴───────┴───────┴───────┴───────┘
 ```
 
-The one-shot modifiers sit under A/S/D/F. H/J/K/L are arrows; the remaining right-hand keys provide navigation, volume, media, and system controls.
-
-### Layer 4 — Symbols (hold Backspace)
+### Layer 2 — Symbols (hold Backspace)
 
 ```
 LEFT HALF                                                                           RIGHT HALF
@@ -108,72 +98,77 @@ LEFT HALF                                                                       
                         └───────┴───────┴───────┴───────┴───────┘   └───────┴───────┴───────┴───────┴───────┘
 ```
 
-This mirrors the number row and its shifted symbols, with punctuation and brackets on the bottom row.
-
-### Layer 5 — Function and macOS Window Management
+### Layer 3 — Fn, Window Management and System
 
 ```
 LEFT HALF                                                                           RIGHT HALF
 ┌───────┬───────┬───────┬───────┬───────┬───────┐                                   ┌───────┬───────┬───────┬───────┬───────┬───────┐
-│   ×   │   ×   │   ×   │   ×   │   ×   │   ×   │                                   │   ×   │   ×   │   ×   │   ×   │   ×   │   ×   │
+│ Boot  │ BTClr │  BT1  │  BT2  │  BT3  │Studio │                                   │  BT4  │  BT5  │USB/BLE│   ×   │   ×   │ Boot  │
 ├───────┼───────┼───────┼───────┼───────┼───────┤                                   ├───────┼───────┼───────┼───────┼───────┼───────┤
-│   ·   │   ×   │  Top  │   ×   │ Return│   ×   │                                   │  F1   │  F2   │  F3   │  F4   │   ×   │   ×   │
+│   ·   │ WS ⇄  │Focus ↑│Monitor│ Tiles │   ×   │                                   │  F1   │  F2   │  F3   │  F4   │   ×   │   ×   │
 ├───────┼───────┼───────┼───────┼───────┼───────┤                                   ├───────┼───────┼───────┼───────┼───────┼───────┤
-│   ×   │ Left  │ Bottom│ Right │ Fill  │   ×   │                                   │  F5   │  F6   │  F7   │  F8   │   ×   │   ×   │
+│   ×   │Focus ←│Focus ↓│Focus →│ Full  │   ×   │                                   │  F5   │  F6   │  F7   │  F8   │   ×   │   ×   │
 ├───────┼───────┼───────┼───────┼───────┼───────┼───────┬───────┐   ┌───────┬───────┼───────┼───────┼───────┼───────┼───────┼───────┤
-│ Globe │   ×   │   ×   │ Center│   ×   │   ×   │   ×   │   ×   │   │   ×   │   ×   │  F9   │  F10  │  F11  │  F12  │   ×   │   ×   │
+│ Globe │   ×   │   ×   │ Accrd │   ×   │   ×   │   ×   │   ×   │   │   ×   │   ×   │  F9   │  F10  │  F11  │  F12  │   ×   │   ×   │
 └───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘   └───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
                         ┌───────┬───────┬───────┬───────┬───────┐   ┌───────┬───────┬───────┬───────┬───────┐
                         │   ·   │   ×   │   ×   │   ×   │ Caps  │   │  F24  │   ×   │   ×   │   ×   │   ×   │
                         └───────┴───────┴───────┴───────┴───────┘   └───────┴───────┴───────┴───────┴───────┘
 ```
 
-Window actions:
+- The window keys send AeroSpace's Ctrl+Alt chords. W/A/S/D move focus, Q returns to
+  the previous workspace, E focuses the next monitor, R toggles tiles, C toggles
+  accordion and F toggles fullscreen.
+- **Boot** puts the half it sits on into the bootloader. The dongle has no key; double-tap
+  its reset button.
+- **BT1–BT5**, **BTClr** and **USB/BLE** control the dongle's connection to the host.
+- **Studio** unlocks [ZMK Studio](https://zmk.studio) on the dongle.
+- **Globe** is the raw macOS Globe/Fn key for emoji, dictation and manual chords.
 
-- **Fill**, **Center**, and **Return** send native macOS Control+Globe+F/C/R chords.
-- **Left**, **Right**, **Top**, and **Bottom** send Hyper+arrow. Bind those four chords to the matching **Move & Resize** commands in System Settings → Keyboard → Keyboard Shortcuts → App Shortcuts.
-- **Globe** is a raw held Globe/Fn key for emoji, dictation, or manual chords.
-- F1–F12 form a 3×4 block on the right hand; Caps Lock and F24 are on the thumb row.
+## AeroSpace
 
-### Alternate and Reserved Layers
+Hold the Hyper/WM thumb and press any key to send it with Ctrl+Alt; add Shift to move
+instead of focus. With AeroSpace's bindings from `~/.nix/aerospace.nix`:
 
-- **Layer 1 — Dvorak** and **Layer 2 — Colemak** are complete alternate bases, but no `DF()`/`PDF()` key currently selects them.
-- **Layers 6 and 7** are reserved and transparent.
-
-### Encoders
-
-| Encoder-map slot | Present in this build | Counter-clockwise | Clockwise |
-|------------------|-----------------------|-------------------|-----------|
-| Left soldered | Yes | Volume down | Volume up |
-| Left Halcyon module | No (TFT installed) | Volume down | Volume up |
-| Right soldered | Yes | Page up | Page down |
-| Right Halcyon module | No module installed | Page up | Page down |
-
-The four-slot encoder map is the same on layers 0–6. Layer 7 is transparent.
+| Hold WM thumb + | Action |
+|-----------------|--------|
+| `h` `j` `k` `l` | Focus (with Shift: move) in that direction |
+| `t` `z` `b` `a` `c` `m` `n` `1`–`4` | Go to (with Shift: send the window to) that workspace |
+| `Tab` | Previous workspace |
+| `o` | Next monitor (with Shift: send the window there) |
+| `/` `,` | Tiles or accordion layout |
+| `f` | Fullscreen (with Shift: toggle floating) |
+| `-` `=` | Shrink or grow the window |
+| `r` / `;` | Resize mode / service mode |
 
 ## Build
 
-```bash
-cd firmware && ./build.sh
-# Output:
-#   firmware/output/elora_left_display.uf2    (left half — TFT display)
-#   firmware/output/elora_right.uf2            (right half)
+GitHub Actions builds every target in `build.yaml` on each push. Pushes to `latest`
+also create a release with all `.uf2` files; the version bump follows the commit message
+(`feat` = minor, `breaking` = major, otherwise patch).
+
+Build locally with Apple `container`:
+
+```nu
+nu scripts/build.nu
 ```
 
-See [firmware/BUILD.md](firmware/BUILD.md) for local QMK build instructions.
+The `.uf2` files land in `firmware/`. The first run downloads the ZMK and Zephyr sources
+into `.zmk-workspace/`; later runs reuse it.
 
 ## Flash
 
-Each half gets its own firmware — do NOT flash the same .uf2 to both sides.
+Double-tap a controller's reset button to mount it as `HALCYON`, then copy the `.uf2`
+onto it.
 
-1. **Left half**: hold BOOT + double-tap RESET, drag `elora_left_display.uf2` onto `RPI-RP2`
-2. **Right half**: hold BOOT + double-tap RESET, drag `elora_right.uf2` onto `RPI-RP2`
-3. Connect USB to the **left** half (master)
+**First flash, or after changing controllers or adding the dongle:**
 
-## Releases
+1. Flash `settings_reset_dongle.uf2` to the dongle and `settings_reset_wireless.uf2` to
+   each half.
+2. Flash `elora_dongle.uf2`, `elora_left.uf2` and `elora_right.uf2`.
+3. Press the reset button on each half once after flashing; skipping it drains the coin
+   cell much faster.
 
-Pushes to `latest` that modify `firmware/**` automatically build both halves and create a GitHub release with `.uf2` artifacts attached. Version is bumped based on commit message keywords (`feat` = minor, `breaking` = major, otherwise patch).
-
-## Links
-
-- [firmware/BUILD.md](firmware/BUILD.md) — detailed build instructions
+**Keymap changes** only need `elora_dongle.uf2`. Edits made in ZMK Studio are stored on
+the dongle and override the compiled keymap until you choose *Restore Stock Settings* in
+Studio.
