@@ -36,6 +36,10 @@ The tapping term is 175 ms with a 120 ms quick-tap. Tab/Fn, Space and Backspace 
 their hold as soon as another key is pressed. Esc/Ctrl only becomes Ctrl together with
 a right-hand key, a thumb key, Tab/Fn, `[` or `]`, so a quick same-hand roll stays Esc.
 
+Backspace uses a 300 ms quick-tap, measured from the first press to the second. One tap
+deletes one character. Press it again inside that window and hold, and Backspace stays
+down until release. A hold after the window is still the Symbols layer.
+
 The Hyper thumb is hold-preferred: any key pressed while it is down gets Ctrl+Alt, and
 only a clean tap arms Hyper for the next key (3 s). One-shot modifiers on
 the Nav layer also release after 3 s.

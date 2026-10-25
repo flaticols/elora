@@ -72,6 +72,20 @@
             tapping-term-ms = <175>;
             bindings = <&kp>, <&sk>;
         };
+
+        /*
+         * Tap: one Backspace. Press again within 300 ms of that press and hold:
+         * Backspace stays down until release, so the OS repeats it. A later hold
+         * is still Symbols. Tab/Fn and Space/Nav keep the 120 ms quick-tap.
+         */
+        bspc_sym: bspc_sym {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "hold-preferred";
+            tapping-term-ms = <175>;
+            quick-tap-ms = <300>;
+            bindings = <&mo>, <&kp>;
+        };
     };
 
     keymap {
@@ -84,7 +98,7 @@
 &lt FN TAB       &kp Q  &kp W  &kp E  &kp R  &kp T                                    &kp Y  &kp U  &kp I     &kp O   &kp P    &kp DEL
 &ctl_esc LCTRL ESC &kp A &kp S &kp D  &kp F  &kp G                                    &kp H  &kp J  &kp K     &kp L   &kp SEMI &kp SQT
 &kp LSHFT        &kp Z  &kp X  &kp C  &kp V  &kp B  &kp LBKT &kp MINUS   &kp UNDER &kp RBKT &kp N &kp M &kp COMMA &kp DOT &kp FSLH &kp RSHFT
-                 &mo FN &kp LALT &kp RET &kp LGUI &hyp_wm WM(LALT) HYPER   &lt SYM BSPC &lt NAV SPACE &kp RGUI &kp LCTRL &caps_word
+                 &mo FN &kp LALT &kp RET &kp LGUI &hyp_wm WM(LALT) HYPER   &bspc_sym SYM BSPC &lt NAV SPACE &kp RGUI &kp LCTRL &caps_word
 MODULE_KEYS
             >;
         };
