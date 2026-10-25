@@ -1,0 +1,22 @@
+# GitHub Actions build matrix. The dongle is the central; both halves are
+# peripherals, so keymap changes only need the dongle reflashed.
+---
+include:
+  - board: halcyon_dongle//zmk
+    shield: halcyon_elora_dongle
+    cmake-args: -DCONFIG_ZMK_STUDIO=y
+    snippet: studio-rpc-usb-uart
+    artifact-name: elora_dongle
+  - board: halcyon_wireless//zmk
+    shield: halcyon_elora_left mod_battery_coincell
+    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n
+    artifact-name: elora_left
+  - board: halcyon_wireless//zmk
+    shield: halcyon_elora_right mod_battery_coincell
+    artifact-name: elora_right
+  - board: halcyon_dongle//zmk
+    shield: settings_reset
+    artifact-name: settings_reset_dongle
+  - board: halcyon_wireless//zmk
+    shield: settings_reset
+    artifact-name: settings_reset_wireless
